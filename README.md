@@ -41,13 +41,29 @@ npm install
 
 The app supports custom map tile configuration through `.env`.
 
+Start from the example file:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
 Example:
 
 ```env
 EXPO_PUBLIC_TILE_URL_TEMPLATE=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 ```
 
-If `.env` is already present in the project, update the values there as needed.
+Rules:
+
+- Keep `.env` local only and do not commit it
+- Commit `.env.example` with safe placeholder or public values only
+- Keep machine-specific values like `ANDROID_HOME` in your system environment, not in `.env`
 
 ## How To Start The Project
 
