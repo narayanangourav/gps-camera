@@ -1,20 +1,38 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { View } from "react-native";
+
+import Home from "./src/screens/Home";
+import CameraScreen from "./src/screens/CameraScreen";
+
+import Overview from "./src/screens/Overview";
+import SettingsScreen from "./src/screens/SettingsScreen";
+import { webDomProps } from "./src/logics/webDom.logic";
+
+// Define the StackParamList
+export type RootStackParamList = {
+  Home: undefined;
+  Overview: undefined;
+  Settings: undefined;
+  Camera: { mode: "picture" | "video" };
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={{ flex: 1 }} {...webDomProps("app-root", "app-root")}>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{ headerShown: false, animation: "fade" }}
+        >
+          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="Overview" component={Overview} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="Camera" component={CameraScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
