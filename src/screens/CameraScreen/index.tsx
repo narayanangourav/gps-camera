@@ -15,7 +15,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../App";
 import AutoScrollText from "../../components/AutoScrollText";
-import LocationPointer from "../../components/LocationPointer";
+import MiniMapPreview from "../../components/MiniMapPreview";
 import { useCameraLogic } from "../../logics/camera.logic";
 import { appTheme } from "../../logics/theme.logic";
 import { webDomProps } from "../../logics/webDom.logic";
@@ -44,7 +44,6 @@ export default function CameraScreen({ route }: Props) {
     cameraRef,
     dateStr,
     timeStr,
-    mapTileUrl,
     refreshLocation,
     handleAction,
     toggleCameraFacing,
@@ -203,16 +202,15 @@ export default function CameraScreen({ route }: Props) {
                     style={styles.mapPreview}
                     {...webDomProps("camera-mini-map", "camera-mini-map")}
                   >
-                    {location && mapTileUrl ? (
+                    {location ? (
                       <>
-                        <Image
-                          source={{ uri: mapTileUrl }}
-                          style={styles.mapImage}
-                          resizeMode="cover"
+                        <MiniMapPreview
+                          latitude={location.coords.latitude}
+                          longitude={location.coords.longitude}
+                          pinSize={18}
+                          scale={0.95}
+                          zoom={15}
                         />
-                        <View style={styles.mapPinOverlay}>
-                          <LocationPointer size={24} />
-                        </View>
                         <TouchableOpacity
                           style={styles.mapRefreshButton}
                           onPress={refreshLocation}
@@ -264,104 +262,112 @@ export default function CameraScreen({ route }: Props) {
                   </View>
 
                   <View
-                    style={styles.addressBox}
-                    {...webDomProps("camera-address-box", "camera-address-box")}
+                    style={styles.infoColumn}
+                    {...webDomProps("camera-info-column", "camera-info-column")}
                   >
                     <View
-                      style={styles.addressTitleRow}
-                      {...webDomProps("camera-address-line1-row", "camera-address-line-row")}
+                      style={styles.addressBox}
+                      {...webDomProps("camera-address-box", "camera-address-box")}
                     >
-                      <AutoScrollText
-                        text={addressLine1}
-                        containerStyle={styles.addressTickerContainer}
-                        textStyle={styles.addressSingleLineText}
-                        containerProps={webDomProps(
-                          "camera-address-line1-scroll",
-                          "camera-address-scroll",
-                        )}
-                        textProps={webDomProps(
-                          "camera-address-line1",
-                          "camera-address-line camera-address-line-primary",
-                        )}
-                      />
-                    </View>
-                    {addressLine2 ? (
                       <View
-                        style={styles.addressSubRow}
-                        {...webDomProps("camera-address-line2-row", "camera-address-line-row")}
+                        style={styles.addressTitleRow}
+                        {...webDomProps("camera-address-line1-row", "camera-address-line-row")}
                       >
                         <AutoScrollText
-                          text={addressLine2}
+                          text={addressLine1}
                           containerStyle={styles.addressTickerContainer}
-                          textStyle={styles.addressSingleLineSubText}
+                          textStyle={styles.addressSingleLineText}
                           containerProps={webDomProps(
-                            "camera-address-line2-scroll",
+                            "camera-address-line1-scroll",
                             "camera-address-scroll",
                           )}
                           textProps={webDomProps(
-                            "camera-address-line2",
-                            "camera-address-line camera-address-line-secondary",
+                            "camera-address-line1",
+                            "camera-address-line camera-address-line-primary",
                           )}
                         />
                       </View>
-                    ) : null}
-                    {locationError && (
-                      <Text style={styles.locationErrorText}>{locationError}</Text>
-                    )}
-                  </View>
-                </View>
+                      {addressLine2 ? (
+                        <View
+                          style={styles.addressSubRow}
+                          {...webDomProps("camera-address-line2-row", "camera-address-line-row")}
+                        >
+                          <AutoScrollText
+                            text={addressLine2}
+                            containerStyle={styles.addressTickerContainer}
+                            textStyle={styles.addressSingleLineSubText}
+                            containerProps={webDomProps(
+                              "camera-address-line2-scroll",
+                              "camera-address-scroll",
+                            )}
+                            textProps={webDomProps(
+                              "camera-address-line2",
+                              "camera-address-line camera-address-line-secondary",
+                            )}
+                          />
+                        </View>
+                      ) : null}
+                      {locationError && (
+                        <Text style={styles.locationErrorText}>{locationError}</Text>
+                      )}
+                    </View>
 
-                <View
-                  style={styles.overlayFooter}
-                  {...webDomProps("camera-meta-footer", "camera-meta-footer")}
-                >
+                    <View
+                      style={styles.overlayFooter}
+                      {...webDomProps("camera-meta-footer", "camera-meta-footer")}
+                    >
                   <View
-                    style={styles.pill}
+                    style={[styles.pill, styles.weatherPill]}
                     {...webDomProps("camera-pill-weather", "camera-meta-pill camera-meta-pill-weather")}
                   >
-                    <Ionicons
-                      name="sunny"
-                      size={12}
-                      color={appTheme.colors.iconPrimary}
-                    />
+                        <Ionicons
+                          name="sunny"
+                          size={12}
+                          color={appTheme.colors.iconPrimary}
+                        />
                     <Text
+                      numberOfLines={1}
                       style={styles.pillText}
                       {...webDomProps("camera-pill-weather-text", "camera-meta-pill-text")}
                     >
-                      {weather ? `${weather.temperature} C` : "-- C"}
-                    </Text>
-                  </View>
+                          {weather ? `${weather.temperature} C` : "-- C"}
+                        </Text>
+                      </View>
                   <View
-                    style={styles.pill}
+                    style={[styles.pill, styles.coordinatePill]}
                     {...webDomProps("camera-pill-lat", "camera-meta-pill camera-meta-pill-lat")}
                   >
-                    <Ionicons
-                      name="pin-outline"
-                      size={12}
-                      color={appTheme.colors.textPrimary}
-                    />
+                        <Ionicons
+                          name="pin-outline"
+                          size={12}
+                          color={appTheme.colors.textPrimary}
+                        />
                     <Text
+                      numberOfLines={1}
                       style={styles.pillText}
                       {...webDomProps("camera-pill-lat-text", "camera-meta-pill-text")}
                     >
-                      {latitudeText}
-                    </Text>
-                  </View>
+                          {latitudeText}
+                        </Text>
+                      </View>
                   <View
-                    style={styles.pill}
+                    style={[styles.pill, styles.coordinatePill]}
                     {...webDomProps("camera-pill-lon", "camera-meta-pill camera-meta-pill-lon")}
                   >
-                    <Ionicons
-                      name="navigate-outline"
-                      size={12}
-                      color={appTheme.colors.textPrimary}
-                    />
+                        <Ionicons
+                          name="navigate-outline"
+                          size={12}
+                          color={appTheme.colors.textPrimary}
+                        />
                     <Text
+                      numberOfLines={1}
                       style={styles.pillText}
                       {...webDomProps("camera-pill-lon-text", "camera-meta-pill-text")}
                     >
-                      {longitudeText}
-                    </Text>
+                          {longitudeText}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
               </View>

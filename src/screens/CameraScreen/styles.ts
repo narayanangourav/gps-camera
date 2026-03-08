@@ -124,6 +124,7 @@ export const useStyles = () => {
         },
         overlayBody: {
           flexDirection: "row",
+          alignItems: "stretch",
           gap: responsiveValue(width, {
             mobile: 8,
             tablet: 10,
@@ -135,17 +136,23 @@ export const useStyles = () => {
             desktop: 12,
           }),
         },
+        infoColumn: {
+          flex: 1,
+          justifyContent: "space-between",
+          minWidth: 0,
+        },
         mapPreview: {
           width: responsiveValue(width, {
             mobile: 64,
             tablet: 72,
             desktop: 88,
           }),
-          height: responsiveValue(width, {
+          minHeight: responsiveValue(width, {
             mobile: 64,
             tablet: 72,
             desktop: 88,
           }),
+          alignSelf: "stretch",
           borderRadius: responsiveValue(width, {
             mobile: 10,
             tablet: 12,
@@ -159,7 +166,11 @@ export const useStyles = () => {
           alignItems: "center",
           flexShrink: 0,
         },
-        mapImage: { width: "100%", height: "100%" },
+        mapImage: {
+          width: "100%",
+          height: "100%",
+          transform: [{ scale: 0.95 }],
+        },
         mapPinOverlay: {
           position: "absolute",
           top: responsiveValue(width, {
@@ -230,17 +241,17 @@ export const useStyles = () => {
           color: appTheme.colors.textPrimary,
           fontWeight: "bold",
           fontSize: responsiveValue(width, {
-            mobile: 10,
-            tablet: 11,
-            desktop: 12,
+            mobile: 13,
+            tablet: 14,
+            desktop: 15,
           }),
         },
         addressSingleLineSubText: {
           color: appTheme.colors.textSecondary,
           fontSize: responsiveValue(width, {
-            mobile: 9,
-            tablet: 10,
-            desktop: 11,
+            mobile: 11,
+            tablet: 12,
+            desktop: 13,
           }),
         },
         locationErrorText: {
@@ -253,10 +264,18 @@ export const useStyles = () => {
           marginTop: 6,
         },
         overlayFooter: {
+          width: "100%",
           flexDirection: "row",
-          justifyContent: "center",
-          flexWrap: "wrap",
+          justifyContent: "space-between",
+          alignItems: "center",
+          alignSelf: "stretch",
+          flexWrap: "nowrap",
           gap: responsiveValue(width, {
+            mobile: 4,
+            tablet: 8,
+            desktop: 10,
+          }),
+          marginTop: responsiveValue(width, {
             mobile: 6,
             tablet: 8,
             desktop: 10,
@@ -264,13 +283,15 @@ export const useStyles = () => {
         },
         pill: {
           backgroundColor: appTheme.colors.surfaceOverlayStrong,
+          minWidth: 0,
+          flexShrink: 1,
           paddingHorizontal: responsiveValue(width, {
-            mobile: 8,
-            tablet: 10,
-            desktop: 12,
+            mobile: 4,
+            tablet: 8,
+            desktop: 10,
           }),
           paddingVertical: responsiveValue(width, {
-            mobile: 4,
+            mobile: 3,
             tablet: 5,
             desktop: 6,
           }),
@@ -281,16 +302,39 @@ export const useStyles = () => {
           }),
           flexDirection: "row",
           alignItems: "center",
-          gap: 4,
+          justifyContent: "center",
+          gap: responsiveValue(width, {
+            mobile: 2,
+            tablet: 4,
+            desktop: 4,
+          }),
+        },
+        weatherPill: {
+          width: responsiveValue(width, {
+            mobile: 58,
+            tablet: 72,
+            desktop: 82,
+          }),
+          flexShrink: 0,
+          paddingHorizontal: responsiveValue(width, {
+            mobile: 3,
+            tablet: 6,
+            desktop: 8,
+          }),
+        },
+        coordinatePill: {
+          flex: 1,
         },
         pillText: {
           color: appTheme.colors.textPrimary,
           fontSize: responsiveValue(width, {
             mobile: 10,
-            tablet: 11,
-            desktop: 12,
+            tablet: 12,
+            desktop: 13,
           }),
           fontWeight: "600",
+          flexShrink: 1,
+          textAlign: "center",
         },
         controlsContainer: {
           height: responsiveValue(width, {

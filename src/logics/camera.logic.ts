@@ -1,11 +1,9 @@
 import { CameraView, FlashMode, useCameraPermissions } from "expo-camera";
 import * as Location from "expo-location";
 import * as MediaLibrary from "expo-media-library";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Platform } from "react-native";
 import ViewShot from "react-native-view-shot";
-
-import { getTileUrl } from "./functions.logic";
 
 type CaptureMode = "picture" | "video";
 
@@ -495,11 +493,6 @@ export function useCameraLogic(mode: CaptureMode) {
     minute: "2-digit",
   });
 
-  const mapTileUrl = useMemo(() => {
-    if (!location) return null;
-    return getTileUrl(location.coords.latitude, location.coords.longitude, 15);
-  }, [location]);
-
   return {
     cameraPermission,
     locationPermission,
@@ -518,7 +511,6 @@ export function useCameraLogic(mode: CaptureMode) {
     cameraRef,
     dateStr,
     timeStr,
-    mapTileUrl,
     refreshLocation,
     handleAction,
     toggleCameraFacing,
