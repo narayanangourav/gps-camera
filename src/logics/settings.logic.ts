@@ -10,6 +10,8 @@ import {
   UIManager,
 } from "react-native";
 
+import { appTheme } from "./theme.logic";
+
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -69,7 +71,7 @@ export function useSettingsLogic() {
         actionLabel: "Learn More",
         action: () =>
           Alert.alert("Premium Status", "You are using the Ad-Free version."),
-        color: "#4caf50",
+        color: appTheme.palette.lagoon,
       },
       {
         id: "privacy",
@@ -80,7 +82,7 @@ export function useSettingsLogic() {
           "Your privacy is paramount. All GPS data and photos are processed locally on your device. We do not upload your media to any cloud servers without your explicit action. Location data is collected strictly for the purpose of stamping your photos and videos with accurate coordinates.",
         actionLabel: "Read Full Policy",
         action: () => openLink("https://example.com/privacy"),
-        color: "#4DACFF",
+        color: appTheme.colors.textPrimary,
       },
       {
         id: "share",
@@ -91,7 +93,7 @@ export function useSettingsLogic() {
           "Love the app? Share it with your friends and colleagues! This tool generates a direct download link or store listing so others can enjoy the same precise, ad-free GPS camera experience. Sharing helps us grow and improve.",
         actionLabel: "Share Now",
         action: handleShare,
-        color: "#A0CFFF",
+        color: appTheme.colors.textSecondary,
       },
       {
         id: "support",
@@ -102,7 +104,7 @@ export function useSettingsLogic() {
           "We are here to help. Whether you've found a bug, want to request a feature, or just want to say hi, our support team is available. We aim to respond to all inquiries within 24 hours.",
         actionLabel: "Email Support",
         action: handleSupport,
-        color: "#FF5252",
+        color: appTheme.colors.textSecondary,
       },
       {
         id: "terms",
@@ -113,7 +115,7 @@ export function useSettingsLogic() {
           "By using this application, you agree to our standard terms of service. These terms ensure fair usage and protect your rights as a user. We recommend reading them to understand your responsibilities and our commitments to you.",
         actionLabel: "View Terms",
         action: () => openLink("https://example.com/terms"),
-        color: "#B0B0E0",
+        color: appTheme.colors.textMuted,
       },
     ],
     [],
@@ -136,4 +138,3 @@ export function useSettingsLogic() {
     goBack,
   };
 }
-

@@ -1,0 +1,40 @@
+export const appPalette = {
+  frost: "#F9F6C4",
+  mist: "#FE9EC7",
+  tide: "#89D4FF",
+  lagoon: "#44ACFF",
+} as const;
+
+export const appTheme = {
+  palette: appPalette,
+  gradients: {
+    screen: [appPalette.frost, appPalette.mist, appPalette.tide] as const,
+    primary: [appPalette.tide, appPalette.lagoon] as const,
+    secondary: [appPalette.mist, appPalette.tide] as const,
+  },
+  colors: {
+    background: appPalette.frost,
+    surface: "rgba(249, 246, 196, 0.92)",
+    surfaceStrong: "rgba(249, 246, 196, 0.96)",
+    surfaceMuted: "rgba(137, 212, 255, 0.84)",
+    surfaceOverlay: "rgba(249, 246, 196, 0.22)",
+    surfaceOverlayStrong: "rgba(254, 158, 199, 0.34)",
+    border: "rgba(68, 172, 255, 0.42)",
+    borderSoft: "rgba(68, 172, 255, 0.26)",
+    shadow: appPalette.lagoon,
+    textPrimary: "#1D3557",
+    textSecondary: "#4B5D78",
+    textMuted: "#6E7F98",
+    textOnLight: "#1D3557",
+    textOnDark: "#FFFFFF",
+    iconPrimary: appPalette.lagoon,
+    iconSecondary: "#6E7F98",
+    mapPlaceholder: appPalette.frost,
+    panelDark: "rgba(29, 53, 87, 0.52)",
+    panelDarkSoft: "rgba(29, 53, 87, 0.24)",
+    live: appPalette.lagoon,
+    record: "#FF4040",
+    recordSolid: "#D93030",
+    cameraBackdrop: "#163B63",
+  },
+} as const;

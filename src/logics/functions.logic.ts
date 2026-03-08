@@ -15,14 +15,10 @@ export type MapCoordinate = {
 export const TARGET_ACCURACY_METERS = 25;
 
 const DEFAULT_TILE_URL_TEMPLATE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const DEFAULT_TILE_ATTRIBUTION = "(c) OpenStreetMap contributors";
 
 export const MAP_TILE_URL_TEMPLATE =
   process.env.EXPO_PUBLIC_TILE_URL_TEMPLATE?.trim() ||
   DEFAULT_TILE_URL_TEMPLATE;
-
-export const MAP_TILE_ATTRIBUTION =
-  process.env.EXPO_PUBLIC_TILE_ATTRIBUTION?.trim() || DEFAULT_TILE_ATTRIBUTION;
 
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);

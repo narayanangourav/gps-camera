@@ -1,14 +1,14 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import Home from "./src/screens/Home";
 import CameraScreen from "./src/screens/CameraScreen";
 
 import Overview from "./src/screens/Overview";
 import SettingsScreen from "./src/screens/SettingsScreen";
-import { webDomProps } from "./src/logics/webDom.logic";
+import { useWebViewportLock, webDomProps } from "./src/logics/webDom.logic";
 
 // Define the StackParamList
 export type RootStackParamList = {
@@ -20,9 +20,20 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    width: "100%",
+    minHeight: 0,
+    overflow: "hidden",
+  },
+});
+
 export default function App() {
+  useWebViewportLock();
+
   return (
-    <View style={{ flex: 1 }} {...webDomProps("app-root", "app-root")}>
+    <View style={styles.root} {...webDomProps("app-root", "app-root")}>
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{ headerShown: false, animation: "fade" }}

@@ -12,12 +12,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 
 import OverviewMap from "../../components/OverviewMap";
-import { MAP_TILE_ATTRIBUTION } from "../../logics/functions.logic";
 import { useOverviewLogic } from "../../logics/overview.logic";
+import { appTheme } from "../../logics/theme.logic";
 import { webDomProps } from "../../logics/webDom.logic";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export default function Overview() {
+  const styles = useStyles();
   const {
     location,
     region,
@@ -44,7 +45,7 @@ export default function Overview() {
       {...webDomProps("overview-screen", "overview-screen")}
     >
       <LinearGradient
-        colors={["#0f0c29", "#302b63", "#24243e"]}
+        colors={appTheme.gradients.screen}
         style={StyleSheet.absoluteFill}
         {...webDomProps("overview-background", "overview-background")}
       />
@@ -67,7 +68,11 @@ export default function Overview() {
             onPress={navigateToSettings}
             {...webDomProps("overview-settings-button", "overview-settings-button")}
           >
-            <Ionicons name="settings-sharp" size={24} color="white" />
+            <Ionicons
+              name="settings-sharp"
+              size={24}
+              color={appTheme.colors.textPrimary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -84,12 +89,20 @@ export default function Overview() {
             activeOpacity={0.8}
             {...webDomProps("overview-mode-camera", "overview-mode-card overview-mode-camera")}
           >
-            <LinearGradient colors={["#4facfe", "#00f2fe"]} style={styles.modeGradient}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="camera" size={32} color="#4facfe" />
+            <LinearGradient colors={appTheme.gradients.secondary} style={styles.modeGradient}>
+              <View style={styles.modeContent}>
+                <View style={styles.iconCircle}>
+                  <Ionicons
+                    name="camera"
+                    size={32}
+                    color={appTheme.colors.iconPrimary}
+                  />
+                </View>
+                <View style={styles.modeTextGroup}>
+                  <Text style={styles.modeTitle}>Camera</Text>
+                  <Text style={styles.modeSubtitle}>Capture with GPS Tag</Text>
+                </View>
               </View>
-              <Text style={styles.modeTitle}>Camera</Text>
-              <Text style={styles.modeSubtitle}>Capture with GPS Tag</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -99,12 +112,20 @@ export default function Overview() {
             activeOpacity={0.8}
             {...webDomProps("overview-mode-video", "overview-mode-card overview-mode-video")}
           >
-            <LinearGradient colors={["#43e97b", "#38f9d7"]} style={styles.modeGradient}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="videocam" size={32} color="#43e97b" />
+            <LinearGradient colors={appTheme.gradients.primary} style={styles.modeGradient}>
+              <View style={styles.modeContent}>
+                <View style={styles.iconCircle}>
+                  <Ionicons
+                    name="videocam"
+                    size={32}
+                    color={appTheme.colors.textPrimary}
+                  />
+                </View>
+                <View style={styles.modeTextGroup}>
+                  <Text style={styles.modeTitle}>Video</Text>
+                  <Text style={styles.modeSubtitle}>Capture with GPS Tag</Text>
+                </View>
               </View>
-              <Text style={styles.modeTitle}>Video</Text>
-              <Text style={styles.modeSubtitle}>Capture with GPS Tag</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -134,14 +155,18 @@ export default function Overview() {
                 style={styles.mapStatus}
                 {...webDomProps("overview-map-loading", "overview-map-loading")}
               >
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={appTheme.colors.textPrimary} />
               </View>
             ) : (
               <View
                 style={styles.mapStatus}
                 {...webDomProps("overview-map-error", "overview-map-error")}
               >
-                <Ionicons name="map-outline" size={32} color="#666" />
+                <Ionicons
+                  name="map-outline"
+                  size={32}
+                  color={appTheme.colors.textMuted}
+                />
                 <Text
                   style={styles.mapStatusText}
                   {...webDomProps("overview-map-status-text", "overview-map-status-text")}
@@ -159,21 +184,6 @@ export default function Overview() {
             >
               <View style={styles.pulsingDot} />
               <Text style={styles.liveText}>LIVE</Text>
-            </View>
-
-            <View
-              style={styles.mapAttribution}
-              {...webDomProps("overview-map-attribution", "overview-map-attribution")}
-            >
-              <Text
-                style={styles.mapAttributionText}
-                {...webDomProps(
-                  "overview-map-attribution-text",
-                  "overview-map-attribution-text",
-                )}
-              >
-                {MAP_TILE_ATTRIBUTION}
-              </Text>
             </View>
 
             {region && (
@@ -196,9 +206,16 @@ export default function Overview() {
                   )}
                 >
                   {isRecentering ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator
+                      size="small"
+                      color={appTheme.colors.textPrimary}
+                    />
                   ) : (
-                    <Ionicons name="locate" size={18} color="#fff" />
+                    <Ionicons
+                      name="locate"
+                      size={18}
+                      color={appTheme.colors.textPrimary}
+                    />
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -211,7 +228,11 @@ export default function Overview() {
                     "overview-map-control overview-map-control-zoom-in",
                   )}
                 >
-                  <Ionicons name="add" size={18} color="#fff" />
+                  <Ionicons
+                    name="add"
+                    size={18}
+                    color={appTheme.colors.textPrimary}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.mapControlButton}
@@ -223,7 +244,11 @@ export default function Overview() {
                     "overview-map-control overview-map-control-zoom-out",
                   )}
                 >
-                  <Ionicons name="remove" size={18} color="#fff" />
+                  <Ionicons
+                    name="remove"
+                    size={18}
+                    color={appTheme.colors.textPrimary}
+                  />
                 </TouchableOpacity>
               </View>
             )}

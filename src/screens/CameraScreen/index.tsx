@@ -16,14 +16,15 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../App";
 import AutoScrollText from "../../components/AutoScrollText";
 import LocationPointer from "../../components/LocationPointer";
-import { MAP_TILE_ATTRIBUTION } from "../../logics/functions.logic";
 import { useCameraLogic } from "../../logics/camera.logic";
+import { appTheme } from "../../logics/theme.logic";
 import { webDomProps } from "../../logics/webDom.logic";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Camera">;
 
 export default function CameraScreen({ route }: Props) {
+  const styles = useStyles();
   const mode = route.params?.mode || "picture";
   const {
     cameraPermission,
@@ -86,7 +87,10 @@ export default function CameraScreen({ route }: Props) {
       style={styles.container}
       {...webDomProps("camera-screen", "camera-screen")}
     >
-      <StatusBar barStyle="light-content" backgroundColor="black" />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={appTheme.colors.cameraBackdrop}
+      />
 
       <View
         style={styles.captureContainer}
@@ -124,13 +128,18 @@ export default function CameraScreen({ route }: Props) {
                 {isRecording && (
                   <View
                     style={{
-                      backgroundColor: "red",
+                      backgroundColor: appTheme.colors.recordSolid,
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                       borderRadius: 20,
                     }}
                   >
-                    <Text style={{ color: "white", fontWeight: "bold" }}>
+                    <Text
+                      style={{
+                        color: appTheme.colors.textOnDark,
+                        fontWeight: "bold",
+                      }}
+                    >
                       {formatDuration(recordingDuration)}
                     </Text>
                   </View>
@@ -147,7 +156,7 @@ export default function CameraScreen({ route }: Props) {
                     <Ionicons
                       name={isDualMode ? "checkbox" : "square-outline"}
                       size={20}
-                      color="white"
+                      color={appTheme.colors.textPrimary}
                     />
                   </TouchableOpacity>
 
@@ -156,7 +165,11 @@ export default function CameraScreen({ route }: Props) {
                       style={styles.miniSwap}
                       onPress={toggleCameraFacing}
                     >
-                      <Ionicons name="refresh" size={16} color="white" />
+                      <Ionicons
+                        name="refresh"
+                        size={16}
+                        color={appTheme.colors.textPrimary}
+                      />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -200,11 +213,6 @@ export default function CameraScreen({ route }: Props) {
                         <View style={styles.mapPinOverlay}>
                           <LocationPointer size={24} />
                         </View>
-                        <View style={styles.mapAttributionBadge}>
-                          <Text numberOfLines={1} style={styles.mapAttributionText}>
-                            {MAP_TILE_ATTRIBUTION}
-                          </Text>
-                        </View>
                         <TouchableOpacity
                           style={styles.mapRefreshButton}
                           onPress={refreshLocation}
@@ -212,15 +220,26 @@ export default function CameraScreen({ route }: Props) {
                           accessibilityLabel="Refresh current location"
                         >
                           {isRefreshingLocation ? (
-                            <ActivityIndicator size="small" color="#fff" />
+                            <ActivityIndicator
+                              size="small"
+                              color={appTheme.colors.textPrimary}
+                            />
                           ) : (
-                            <Ionicons name="locate" size={11} color="#fff" />
+                            <Ionicons
+                              name="locate"
+                              size={11}
+                              color={appTheme.colors.textPrimary}
+                            />
                           )}
                         </TouchableOpacity>
                       </>
                     ) : (
                       <>
-                        <Ionicons name="map" size={32} color="#888" />
+                        <Ionicons
+                          name="map"
+                          size={32}
+                          color={appTheme.colors.textMuted}
+                        />
                         <TouchableOpacity
                           style={styles.mapRefreshButton}
                           onPress={refreshLocation}
@@ -228,9 +247,16 @@ export default function CameraScreen({ route }: Props) {
                           accessibilityLabel="Refresh current location"
                         >
                           {isRefreshingLocation ? (
-                            <ActivityIndicator size="small" color="#fff" />
+                            <ActivityIndicator
+                              size="small"
+                              color={appTheme.colors.textPrimary}
+                            />
                           ) : (
-                            <Ionicons name="locate" size={11} color="#fff" />
+                            <Ionicons
+                              name="locate"
+                              size={11}
+                              color={appTheme.colors.textPrimary}
+                            />
                           )}
                         </TouchableOpacity>
                       </>
@@ -293,7 +319,11 @@ export default function CameraScreen({ route }: Props) {
                     style={styles.pill}
                     {...webDomProps("camera-pill-weather", "camera-meta-pill camera-meta-pill-weather")}
                   >
-                    <Ionicons name="sunny" size={12} color="white" />
+                    <Ionicons
+                      name="sunny"
+                      size={12}
+                      color={appTheme.colors.iconPrimary}
+                    />
                     <Text
                       style={styles.pillText}
                       {...webDomProps("camera-pill-weather-text", "camera-meta-pill-text")}
@@ -305,7 +335,11 @@ export default function CameraScreen({ route }: Props) {
                     style={styles.pill}
                     {...webDomProps("camera-pill-lat", "camera-meta-pill camera-meta-pill-lat")}
                   >
-                    <Ionicons name="pin-outline" size={12} color="white" />
+                    <Ionicons
+                      name="pin-outline"
+                      size={12}
+                      color={appTheme.colors.textPrimary}
+                    />
                     <Text
                       style={styles.pillText}
                       {...webDomProps("camera-pill-lat-text", "camera-meta-pill-text")}
@@ -317,7 +351,11 @@ export default function CameraScreen({ route }: Props) {
                     style={styles.pill}
                     {...webDomProps("camera-pill-lon", "camera-meta-pill camera-meta-pill-lon")}
                   >
-                    <Ionicons name="navigate-outline" size={12} color="white" />
+                    <Ionicons
+                      name="navigate-outline"
+                      size={12}
+                      color={appTheme.colors.textPrimary}
+                    />
                     <Text
                       style={styles.pillText}
                       {...webDomProps("camera-pill-lon-text", "camera-meta-pill-text")}
@@ -340,7 +378,11 @@ export default function CameraScreen({ route }: Props) {
           <Ionicons
             name={flash === "on" ? "flash" : "flash-off"}
             size={24}
-            color={flash === "on" ? "#FFD700" : "white"}
+            color={
+              flash === "on"
+                ? appTheme.colors.iconPrimary
+                : appTheme.colors.textPrimary
+            }
           />
         </TouchableOpacity>
 
@@ -358,12 +400,16 @@ export default function CameraScreen({ route }: Props) {
               <View
                 style={[
                   styles.captureButton,
-                  { backgroundColor: isRecording ? "transparent" : "#FF4040" },
+                  {
+                    backgroundColor: isRecording
+                      ? "transparent"
+                      : appTheme.colors.record,
+                  },
                   isRecording && {
                     borderRadius: 4,
                     width: 30,
                     height: 30,
-                    backgroundColor: "#FF4040",
+                    backgroundColor: appTheme.colors.record,
                   },
                 ]}
               >
@@ -372,7 +418,7 @@ export default function CameraScreen({ route }: Props) {
                     style={{
                       width: "100%",
                       height: "100%",
-                      backgroundColor: "red",
+                      backgroundColor: appTheme.colors.recordSolid,
                       borderRadius: 4,
                     }}
                   />
@@ -383,7 +429,11 @@ export default function CameraScreen({ route }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.controlButton} onPress={toggleCameraFacing}>
-          <Ionicons name="camera-reverse" size={24} color="white" />
+          <Ionicons
+            name="camera-reverse"
+            size={24}
+            color={appTheme.colors.textPrimary}
+          />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

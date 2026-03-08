@@ -5,11 +5,13 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import FeatureItem from "../../components/FeatureItem";
 import { useHomeLogic } from "../../logics/home.logic";
+import { appTheme } from "../../logics/theme.logic";
 import { webDomProps } from "../../logics/webDom.logic";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export default function Home() {
   const { fadeAnim, slideAnim, goToOverview } = useHomeLogic();
+  const styles = useStyles();
 
   return (
     <SafeAreaView
@@ -17,16 +19,19 @@ export default function Home() {
       {...webDomProps("home-screen", "home-screen")}
     >
       <LinearGradient
-        colors={["#0f0c29", "#302b63", "#24243e"]}
+        colors={appTheme.gradients.screen}
         style={styles.background}
         {...webDomProps("home-background", "home-background")}
       >
         <View style={styles.content} {...webDomProps("home-content", "home-content")}>
           <Animated.View
-            style={{
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            }}
+            style={[
+              styles.heroContent,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
             {...webDomProps("home-hero", "home-hero")}
           >
             <View
@@ -35,7 +40,7 @@ export default function Home() {
             >
               <Image
                 source={require("../../../assets/app-icon.png")}
-                style={{ width: 140, height: 140 }}
+                style={styles.logoImage}
                 resizeMode="contain"
                 {...webDomProps("home-logo", "home-logo")}
               />
@@ -87,11 +92,15 @@ export default function Home() {
             {...webDomProps("home-next-button", "home-next-button")}
           >
             <LinearGradient
-              colors={["#4DACFF", "#007AFF"]}
+              colors={appTheme.gradients.primary}
               style={styles.gradientButton}
               {...webDomProps("home-next-gradient", "home-next-gradient")}
             >
-              <Ionicons name="arrow-forward" size={24} color="white" />
+              <Ionicons
+                name="arrow-forward"
+                size={24}
+                color={appTheme.colors.textOnLight}
+              />
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>

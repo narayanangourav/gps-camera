@@ -45,7 +45,6 @@ Example:
 
 ```env
 EXPO_PUBLIC_TILE_URL_TEMPLATE=https://tile.openstreetmap.org/{z}/{x}/{y}.png
-EXPO_PUBLIC_TILE_ATTRIBUTION=(c) OpenStreetMap contributors
 ```
 
 If `.env` is already present in the project, update the values there as needed.

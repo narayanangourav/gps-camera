@@ -1,9 +1,11 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+import { responsiveValue } from "../../logics/responsive.logic";
+import { appTheme } from "../../logics/theme.logic";
 import { webDomProps } from "../../logics/webDom.logic";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 type FeatureItemProps = {
   icon: React.ComponentProps<typeof Ionicons>["name"];
@@ -12,6 +14,14 @@ type FeatureItemProps = {
 };
 
 export default function FeatureItem({ icon, text, selectorKey }: FeatureItemProps) {
+  const styles = useStyles();
+  const { width } = useWindowDimensions();
+  const iconSize = responsiveValue(width, {
+    mobile: 20,
+    tablet: 24,
+    desktop: 26,
+  });
+
   return (
     <View
       style={styles.featureItem}
@@ -20,7 +30,12 @@ export default function FeatureItem({ icon, text, selectorKey }: FeatureItemProp
         "home-feature-item",
       )}
     >
-      <Ionicons name={icon} size={24} color="#A0CFFF" style={{ marginRight: 15 }} />
+      <Ionicons
+        name={icon}
+        size={iconSize}
+        color={appTheme.colors.iconPrimary}
+        style={styles.featureIcon}
+      />
       <Text
         style={styles.featureText}
         {...webDomProps(

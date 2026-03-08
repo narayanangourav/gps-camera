@@ -1,10 +1,12 @@
 import { StyleSheet } from "react-native";
 
+import { appTheme } from "../../logics/theme.logic";
+
 export const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
     overflow: "hidden",
-    backgroundColor: "#e8ecef",
+    backgroundColor: appTheme.colors.mapPlaceholder,
   },
   tileLayer: {
     ...StyleSheet.absoluteFillObject,

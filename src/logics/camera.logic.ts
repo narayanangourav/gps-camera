@@ -14,11 +14,54 @@ type AddressLines = {
   line2: string;
 };
 
+const buildAddressLines = (
+  line1Candidates: string[],
+  line2Parts: string[],
+): AddressLines | null => {
+  const line1 = line1Candidates[0] || null;
+  const normalizedLine1 = line1 ? normalizeAddressToken(line1) : null;
+  const filteredLine2Parts = line2Parts.filter((part) => {
+    if (!normalizedLine1) return true;
+    return normalizeAddressToken(part) !== normalizedLine1;
+  });
+
+  if (!line1 && filteredLine2Parts.length === 0) {
+    return null;
+  }
+
+  if (line1) {
+    return {
+      line1,
+      line2: filteredLine2Parts.join(", "),
+    };
+  }
+
+  return {
+    line1: filteredLine2Parts[0],
+    line2: filteredLine2Parts.slice(1).join(", "),
+  };
+};
+
 const normalizeAddressToken = (value: string) =>
   value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+
+const splitDisplayNameParts = (displayName?: string | null) => {
+  if (!displayName) return [];
+
+  const parts: string[] = [];
+  displayName
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .forEach((part) => {
+      pushUniqueText(parts, part);
+    });
+
+  return parts;
+};
 
 const pushUniqueText = (target: string[], value?: string | null) => {
   if (!value) return;
@@ -51,31 +94,37 @@ const buildAddressLinesFromExpo = (
   pushUniqueText(line2Parts, address.region);
   pushUniqueText(line2Parts, address.postalCode);
   pushUniqueText(line2Parts, address.country);
-  const line2 = line2Parts.join(", ");
 
-  if (!line1 && !line2) return null;
-  return {
-    line1: line1 || "Unknown road",
-    line2: line2 || "Address unavailable",
-  };
+  return buildAddressLines(line1Candidates, line2Parts);
 };
 
 const buildAddressLinesFromNominatim = (data: any): AddressLines | null => {
   const a = data?.address ?? {};
+  const displayNameParts = splitDisplayNameParts(data?.display_name);
 
   const line1Parts: string[] = [];
   pushUniqueText(
     line1Parts,
     [
-      a.house_number || a.house || a.building || a.shop,
+      a.house_number || a.house || a.house_name || a.building || a.shop,
       a.road || a.residential || a.pedestrian || a.footway || a.path,
     ]
       .filter(Boolean)
       .join(", "),
   );
+  pushUniqueText(
+    line1Parts,
+    [a.house_name || a.building || a.amenity || a.office, a.road]
+      .filter(Boolean)
+      .join(", "),
+  );
   pushUniqueText(line1Parts, a.road);
   pushUniqueText(line1Parts, a.residential);
+  pushUniqueText(line1Parts, a.amenity);
+  pushUniqueText(line1Parts, a.building);
   pushUniqueText(line1Parts, data?.name);
+  pushUniqueText(line1Parts, displayNameParts[0]);
+  pushUniqueText(line1Parts, displayNameParts[1]);
   const line1 = line1Parts[0] || null;
 
   const line2Parts: string[] = [];
@@ -87,13 +136,13 @@ const buildAddressLinesFromNominatim = (data: any): AddressLines | null => {
   pushUniqueText(line2Parts, a.state);
   pushUniqueText(line2Parts, a.postcode);
   pushUniqueText(line2Parts, a.country);
-  const line2 = line2Parts.join(", ");
+  if (line2Parts.length === 0) {
+    displayNameParts.slice(1).forEach((part) => {
+      pushUniqueText(line2Parts, part);
+    });
+  }
 
-  if (!line1 && !line2) return null;
-  return {
-    line1: line1 || "Unknown road",
-    line2: line2 || "Address unavailable",
-  };
+  return buildAddressLines(line1Parts, line2Parts);
 };
 
 const buildAddressLinesFromBigData = (data: any): AddressLines | null => {
@@ -127,13 +176,41 @@ const buildAddressLinesFromBigData = (data: any): AddressLines | null => {
   pushUniqueText(line2Parts, data?.principalSubdivision);
   pushUniqueText(line2Parts, data?.postcode);
   pushUniqueText(line2Parts, data?.countryName);
-  const line2 = line2Parts.join(", ");
 
-  if (!line1 && !line2) return null;
-  return {
-    line1: line1 || "Unknown road",
-    line2: line2 || "Address unavailable",
-  };
+  return buildAddressLines(line1Parts, line2Parts);
+};
+
+const fetchRemoteAddressLines = async (
+  loc: Location.LocationObject,
+): Promise<AddressLines | null> => {
+  try {
+    const nominatim = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${loc.coords.latitude}&lon=${loc.coords.longitude}&addressdetails=1&zoom=18&namedetails=1`,
+      { headers: { "Accept-Language": "en" } },
+    );
+    if (nominatim.ok) {
+      const data = await nominatim.json();
+      const lines = buildAddressLinesFromNominatim(data);
+      if (lines) return lines;
+    }
+  } catch (_error) {
+    // Fall through to the next provider.
+  }
+
+  try {
+    const bigData = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${loc.coords.latitude}&longitude=${loc.coords.longitude}&localityLanguage=en`,
+    );
+    if (bigData.ok) {
+      const data = await bigData.json();
+      const lines = buildAddressLinesFromBigData(data);
+      if (lines) return lines;
+    }
+  } catch (_error) {
+    // Fall through to local reverse geocode.
+  }
+
+  return null;
 };
 
 export function useCameraLogic(mode: CaptureMode) {
@@ -174,53 +251,9 @@ export function useCameraLogic(mode: CaptureMode) {
     setLocationError(null);
     const coordinateLine = `${loc.coords.latitude.toFixed(6)}, ${loc.coords.longitude.toFixed(6)}`;
 
-    if (Platform.OS === "web") {
-      try {
-        const nominatim = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${loc.coords.latitude}&lon=${loc.coords.longitude}&addressdetails=1&zoom=18&namedetails=1`,
-          { headers: { "Accept-Language": "en" } },
-        );
-        if (nominatim.ok) {
-          const data = await nominatim.json();
-          const lines = buildAddressLinesFromNominatim(data);
-          if (lines) {
-            setAddressLines(lines);
-          } else {
-            setAddressLines({
-              line1: coordinateLine,
-              line2: "Address unavailable",
-            });
-          }
-        } else {
-          throw new Error("Nominatim reverse geocode failed");
-        }
-      } catch (_nominatimError) {
-        try {
-          const bigData = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${loc.coords.latitude}&longitude=${loc.coords.longitude}&localityLanguage=en`,
-          );
-          if (bigData.ok) {
-            const data = await bigData.json();
-            const lines = buildAddressLinesFromBigData(data);
-            setAddressLines(
-              lines || {
-                line1: coordinateLine,
-                line2: "Address unavailable",
-              },
-            );
-          } else {
-            setAddressLines({
-              line1: coordinateLine,
-              line2: "Address unavailable",
-            });
-          }
-        } catch (_bigDataError) {
-          setAddressLines({
-            line1: coordinateLine,
-            line2: "Address unavailable",
-          });
-        }
-      }
+    const remoteLines = await fetchRemoteAddressLines(loc);
+    if (remoteLines) {
+      setAddressLines(remoteLines);
     } else {
       try {
         const reverseGeocode = await Location.reverseGeocodeAsync({
