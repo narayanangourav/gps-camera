@@ -7,8 +7,20 @@
     "android": "expo start --android --port 8000",
     "ios": "expo start --ios --port 8000",
     "web": "expo start --web --port 8000",
+    "typecheck": "tsc --noEmit --pretty false",
+    "prebuild:android": "expo prebuild -p android",
+    "prebuild:ios": "expo prebuild -p ios",
     "build:web": "expo export -p web",
-    "preview:web": "node scripts/serve-web.mjs"
+    "build:android": "npm run build:apk:debug",
+    "build:apk": "npm run build:apk:debug",
+    "build:apk:debug": "npm run prebuild:android && cd android && gradlew.bat assembleDebug",
+    "build:apk:release": "npm run prebuild:android && cd android && gradlew.bat assembleRelease",
+    "build:aab": "npm run prebuild:android && cd android && gradlew.bat bundleRelease",
+    "build:android:release": "npm run build:apk:release",
+    "build:android:bundle": "npm run build:aab",
+    "build:ios": "expo prebuild -p ios && expo run:ios --configuration Release",
+    "preview:web": "node scripts/serve-web.mjs",
+    "build": "npm run typecheck && npm run build:web && npm run build:apk:debug"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",

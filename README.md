@@ -95,71 +95,150 @@ npm run web
 - `npm run web` starts the app in the browser
 - The app will ask for camera, location, and media-library permissions at runtime
 
+## Dev Server Vs Build
+
+These commands do not create a final distributable build:
+
+- `npm run start`
+- `npm run android`
+- `npm run ios`
+- `npm run web`
+
+They only start the Expo development server.
+
 ## How To Build
 
-### Android Debug Build
+### Whole Project Build
 
-Generate the native Android project if needed:
-
-```bash
-npx expo prebuild -p android
-```
-
-Build and install a debug version:
+Build the local project deliverables available on Windows:
 
 ```bash
-npx expo run:android
+npm run build
 ```
 
-### Android Release Build
+This runs:
 
-Build a release variant locally:
+- TypeScript typecheck
+- Web production export
+- Android debug APK build
 
-```bash
-npx expo run:android --variant release
-```
+Output locations:
 
-### iOS Debug Build
-
-Generate the native iOS project if needed:
-
-```bash
-npx expo prebuild -p ios
-```
-
-Run the iOS app locally:
-
-```bash
-npx expo run:ios
-```
-
-### iOS Release Build
-
-Build a release version locally on macOS:
-
-```bash
-npx expo run:ios --configuration Release
-```
+- Web: `dist`
+- Android debug APK: `android/app/build/outputs/apk/debug/app-debug.apk`
 
 ### Web Build
 
-Export the web app:
-
-```bash
-npx expo export -p web
-```
-
-The exported files will be generated in the output directory created by Expo.
-
-Preview the production web build on `http://localhost:8081`:
+Build only the web production output:
 
 ```bash
 npm run build:web
 ```
 
+Equivalent direct Expo command:
+
+```bash
+npx expo export -p web
+```
+
+The exported files will be generated in:
+
+- `dist`
+
+Preview the production web build on `http://localhost:8081`:
+
 ```bash
 npm run preview:web
 ```
+
+### Android Local Native Build
+
+Android local native build outputs are generated here after `npx expo prebuild -p android` and Android build commands:
+
+- APKs: `d:\Learnings\GPS Camera\gps-camera\android\app\build\outputs\apk\`
+- AABs/bundles: `d:\Learnings\GPS Camera\gps-camera\android\app\build\outputs\bundle\`
+
+Build commands:
+
+```bash
+npx expo prebuild -p android
+```
+
+```powershell
+cd android
+.\gradlew assembleDebug
+.\gradlew assembleRelease
+.\gradlew bundleRelease
+```
+
+### Android Debug APK
+
+Build only the Android debug APK:
+
+```bash
+npm run build:android
+```
+
+Equivalent commands:
+
+```bash
+npm run build:apk
+npm run build:apk:debug
+```
+
+Debug APK output:
+
+- `android/app/build/outputs/apk/debug/app-debug.apk`
+
+### Android Release APK
+
+Build a release APK locally:
+
+```bash
+npm run build:apk:release
+```
+
+Release APK output:
+
+- `android/app/build/outputs/apk/release/app-release.apk`
+
+### Android Release AAB
+
+Build a release Android App Bundle locally:
+
+```bash
+npm run build:aab
+```
+
+Equivalent command:
+
+```bash
+npm run build:android:bundle
+```
+
+Release bundle output:
+
+- `android/app/build/outputs/bundle/release/app-release.aab`
+
+### iOS Build
+
+Local iOS builds still require macOS. On Windows, `npm run build` does not build iOS.
+
+If you are on macOS, you can use:
+
+```bash
+npm run build:ios
+```
+
+Typical local iOS build output is generated under:
+
+- `ios/build/`
+
+## Which File To Share Or Install
+
+- Web: use the `dist` folder
+- Android: use the generated `.apk` or `.aab` inside `android/app/build/outputs/...`
+- iOS: use the generated app/archive from the `ios/build` flow
 
 ## Optional EAS Build
 
@@ -230,7 +309,27 @@ npm run web
 ```
 
 ```bash
+npm run build
+```
+
+```bash
 npm run build:web
+```
+
+```bash
+npm run build:android
+```
+
+```bash
+npm run build:apk:release
+```
+
+```bash
+npm run build:aab
+```
+
+```bash
+npm run build:ios
 ```
 
 ```bash
