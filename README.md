@@ -240,6 +240,32 @@ Typical local iOS build output is generated under:
 - Android: use the generated `.apk` or `.aab` inside `android/app/build/outputs/...`
 - iOS: use the generated app/archive from the `ios/build` flow
 
+## GitHub Release Build
+
+A GitHub Actions workflow is included to build signed Android release artifacts whenever you push a Git tag.
+
+Workflow file:
+
+- `.github/workflows/build-android-release.yml`
+
+Trigger:
+
+- Push any Git tag
+
+Generated release files:
+
+- `android/app/build/outputs/apk/release/app-release.apk`
+- `android/app/build/outputs/bundle/release/app-release.aab`
+
+Required GitHub repository secrets:
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+The workflow uploads both files as workflow artifacts and attaches them to the GitHub release for that tag.
+
 ## Optional EAS Build
 
 If you want cloud builds, install EAS CLI:

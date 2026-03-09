@@ -61,6 +61,9 @@ jobs:
       - name: Sync Android native project
         run: npx expo prebuild -p android --non-interactive
 
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x android/gradlew
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug
