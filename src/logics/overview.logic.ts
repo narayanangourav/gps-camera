@@ -1,7 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Platform } from "react-native";
 
 import {
   formatAddress,
@@ -55,14 +54,6 @@ export function useOverviewLogic() {
           return;
         }
 
-        if (Platform.OS === "android") {
-          try {
-            await Location.enableNetworkProviderAsync();
-          } catch (error) {
-            console.log("Network provider not enabled:", error);
-          }
-        }
-
         const lastKnown = await Location.getLastKnownPositionAsync({
           maxAge: 15_000,
           requiredAccuracy: 100,
@@ -75,7 +66,7 @@ export function useOverviewLogic() {
 
         try {
           const current = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.BestForNavigation,
+            accuracy: Location.Accuracy.High,
             mayShowUserSettingsDialog: true,
           });
           setLocationError(null);
@@ -89,7 +80,7 @@ export function useOverviewLogic() {
 
         subscription = await Location.watchPositionAsync(
           {
-            accuracy: Location.Accuracy.BestForNavigation,
+            accuracy: Location.Accuracy.High,
             timeInterval: 1500,
             distanceInterval: 1,
             mayShowUserSettingsDialog: true,
@@ -152,16 +143,8 @@ export function useOverviewLogic() {
         return;
       }
 
-      if (Platform.OS === "android") {
-        try {
-          await Location.enableNetworkProviderAsync();
-        } catch (error) {
-          console.log("Network provider not enabled:", error);
-        }
-      }
-
       const fresh = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.BestForNavigation,
+        accuracy: Location.Accuracy.High,
         mayShowUserSettingsDialog: true,
       });
 
