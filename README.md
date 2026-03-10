@@ -2,6 +2,15 @@
 
 GPS Camera is an Expo React Native application for capturing photos and videos with GPS-based metadata overlays such as location, date, time, weather, latitude, and longitude.
 
+## License And Usage
+
+This project is proprietary and all rights are reserved.
+
+- Copyright = ownership (automatic when you create code).
+- No LICENSE file is provided for open use; this project is `UNLICENSED` (all rights reserved).
+- No open-source license (MIT, AGPL, GPL, etc.) is granted for this repository
+- Copying, modifying, redistributing, sublicensing, or commercial use is not permitted without explicit written permission from the owner
+
 ## Prerequisites
 
 Before starting, make sure the following are installed:
