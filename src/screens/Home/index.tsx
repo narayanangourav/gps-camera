@@ -39,7 +39,7 @@ export default function Home() {
               {...webDomProps("home-logo-container", "home-logo-container")}
             >
               <Image
-                source={require("../../../assets/app-icon.png")}
+                source={require("../../../assets/app-logo.png")}
                 style={styles.logoImage}
                 resizeMode="contain"
                 {...webDomProps("home-logo", "home-logo")}

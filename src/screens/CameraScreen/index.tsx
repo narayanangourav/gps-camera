@@ -183,7 +183,7 @@ export default function CameraScreen({ route }: Props) {
                   {...webDomProps("camera-info-header", "camera-info-header")}
                 >
                   <Image
-                    source={require("../../../assets/app-icon.png")}
+                    source={require("../../../assets/app-logo.png")}
                     style={styles.appIconSmall}
                     resizeMode="cover"
                   />
