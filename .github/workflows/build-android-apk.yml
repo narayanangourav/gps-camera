@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Installable Android APK
 
 on:
   workflow_dispatch:
@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  build-debug-apk:
-    name: Build Debug APK
+  build-release-apk:
+    name: Build Installable APK
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -64,13 +64,13 @@ jobs:
       - name: Ensure Gradle wrapper is executable
         run: chmod +x android/gradlew
 
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleRelease
 
-      - name: Upload debug APK
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: gps-camera-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: gps-camera-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error

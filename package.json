@@ -11,8 +11,8 @@
     "prebuild:android": "expo prebuild -p android",
     "prebuild:ios": "expo prebuild -p ios",
     "build:web": "expo export -p web",
-    "build:android": "npm run build:apk:debug",
-    "build:apk": "npm run build:apk:debug",
+    "build:android": "npm run build:apk:release",
+    "build:apk": "npm run build:apk:release",
     "build:apk:debug": "npm run prebuild:android && cd android && gradlew.bat assembleDebug",
     "build:apk:release": "npm run prebuild:android && cd android && gradlew.bat assembleRelease",
     "build:aab": "npm run prebuild:android && cd android && gradlew.bat bundleRelease",
@@ -20,7 +20,7 @@
     "build:android:bundle": "npm run build:aab",
     "build:ios": "expo prebuild -p ios && expo run:ios --configuration Release",
     "preview:web": "node scripts/serve-web.mjs",
-    "build": "npm run typecheck && npm run build:web && npm run build:apk:debug"
+    "build": "npm run typecheck && npm run build:web && npm run build:apk:release"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",

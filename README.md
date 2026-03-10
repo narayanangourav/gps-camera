@@ -120,12 +120,12 @@ This runs:
 
 - TypeScript typecheck
 - Web production export
-- Android debug APK build
+- Android release APK build
 
 Output locations:
 
 - Web: `dist`
-- Android debug APK: `android/app/build/outputs/apk/debug/app-debug.apk`
+- Android release APK: `android/app/build/outputs/apk/release/app-release.apk`
 
 ### Web Build
 
@@ -173,7 +173,23 @@ cd android
 
 ### Android Debug APK
 
+Debug APKs are for Metro-based development only. They are not meant for direct installation as a standalone app.
+
 Build only the Android debug APK:
+
+```bash
+npm run build:apk:debug
+```
+
+Debug APK output:
+
+- `android/app/build/outputs/apk/debug/app-debug.apk`
+
+If you install a debug APK directly, you must run Metro or you will see the `Unable to load script` error.
+
+### Android Release APK
+
+Build an installable Android release APK locally:
 
 ```bash
 npm run build:android
@@ -183,18 +199,6 @@ Equivalent commands:
 
 ```bash
 npm run build:apk
-npm run build:apk:debug
-```
-
-Debug APK output:
-
-- `android/app/build/outputs/apk/debug/app-debug.apk`
-
-### Android Release APK
-
-Build a release APK locally:
-
-```bash
 npm run build:apk:release
 ```
 
@@ -383,6 +387,7 @@ index.ts
 
 - If location is not fetched, make sure device GPS is enabled
 - If camera is not opening, confirm camera permission is granted
+- If you see `Unable to load script` after installing an APK, you installed a debug APK. Use the release APK instead, or run Metro for debug builds
 - If the web map does not load, verify your internet connection and tile configuration
 - If Metro behaves unexpectedly, restart it with:
 
