@@ -213,8 +213,7 @@ const fetchRemoteAddressLines = async (
 
 export function useCameraLogic(mode: CaptureMode) {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [locationPermission, requestLocationPermission] =
-    Location.useForegroundPermissions();
+  const [locationPermission] = Location.useForegroundPermissions();
   const [mediaLibraryPermission, requestMediaLibraryPermission] =
     MediaLibrary.usePermissions();
 
@@ -238,9 +237,14 @@ export function useCameraLogic(mode: CaptureMode) {
 
   useEffect(() => {
     (async () => {
-      if (!cameraPermission?.granted) await requestCameraPermission();
-      if (!locationPermission?.granted) await requestLocationPermission();
-      if (!mediaLibraryPermission?.granted) await requestMediaLibraryPermission();
+      try {
+        if (!cameraPermission?.granted) await requestCameraPermission();
+        if (!mediaLibraryPermission?.granted) {
+          await requestMediaLibraryPermission();
+        }
+      } catch (error) {
+        console.log("Permission request error:", error);
+      }
     })();
   }, [mode]);
 
@@ -304,14 +308,6 @@ export function useCameraLogic(mode: CaptureMode) {
         return false;
       }
 
-      if (Platform.OS === "android") {
-        try {
-          await Location.enableNetworkProviderAsync();
-        } catch (error) {
-          console.log("Network provider not enabled:", error);
-        }
-      }
-
       return true;
     } catch (error) {
       console.log("Location readiness error:", error);
@@ -323,7 +319,7 @@ export function useCameraLogic(mode: CaptureMode) {
   const fetchPreciseLocation = async () => {
     try {
       const current = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.BestForNavigation,
+        accuracy: Location.Accuracy.High,
         mayShowUserSettingsDialog: true,
       });
       await updateLocationMetadata(current);
@@ -335,46 +331,61 @@ export function useCameraLogic(mode: CaptureMode) {
 
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null;
+    let active = true;
 
     (async () => {
-      const isReady = await ensureLocationReady();
-      if (!isReady) return;
+      try {
+        const isReady = await ensureLocationReady();
+        if (!isReady || !active) return;
 
-      const lastKnown = await Location.getLastKnownPositionAsync({
-        maxAge: 30_000,
-        requiredAccuracy: 150,
-      });
-      if (lastKnown) {
-        await updateLocationMetadata(lastKnown);
+        const lastKnown = await Location.getLastKnownPositionAsync({
+          maxAge: 30_000,
+          requiredAccuracy: 150,
+        });
+        if (lastKnown && active) {
+          await updateLocationMetadata(lastKnown);
+        }
+
+        if (!active) return;
+        await fetchPreciseLocation();
+
+        if (!active) return;
+        subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 3000,
+            distanceInterval: 1,
+            mayShowUserSettingsDialog: true,
+          },
+          (loc) => {
+            if (!active) return;
+            void updateLocationMetadata(loc);
+          },
+        );
+      } catch (error) {
+        console.log("Camera location watcher error:", error);
+        if (active) {
+          setLocationError("Unable to keep location tracking active.");
+        }
       }
-
-      await fetchPreciseLocation();
-
-      subscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          timeInterval: 3000,
-          distanceInterval: 1,
-          mayShowUserSettingsDialog: true,
-        },
-        (loc) => {
-          void updateLocationMetadata(loc);
-        },
-      );
     })();
 
     return () => {
+      active = false;
       subscription?.remove();
     };
   }, [mode]);
 
   const refreshLocation = async () => {
     setIsRefreshingLocation(true);
-    const isReady = await ensureLocationReady();
-    if (isReady) {
-      await fetchPreciseLocation();
+    try {
+      const isReady = await ensureLocationReady();
+      if (isReady) {
+        await fetchPreciseLocation();
+      }
+    } finally {
+      setIsRefreshingLocation(false);
     }
-    setIsRefreshingLocation(false);
   };
 
   useEffect(() => {
