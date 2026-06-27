@@ -61,10 +61,14 @@
   - no Android/iOS/APK/App Store/Play Store guidance
   - uses `VITE_TILE_URL_TEMPLATE`
 - `.github/workflows/deploy-github-pages.yml` now:
-  - triggers on `main`
+  - triggers on `main` and `master`
   - uses `npm ci`
   - runs typecheck, unit tests, and Vite build
   - no longer contains Expo-specific environment flags
+- `vite.config.ts` now derives a GitHub Pages-safe base path from `GITHUB_REPOSITORY`
+  - user/org pages build to `/`
+  - project pages build to `/<repo>/`
+  - fixes deployed asset 404s caused by relative `./assets/...` URLs on GitHub Pages project sites
 - `.gitignore` now ignores:
   - `dist/`
   - `.tmp-tests/`
