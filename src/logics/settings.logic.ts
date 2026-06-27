@@ -1,27 +1,15 @@
 import { useNavigation } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { useMemo, useState } from "react";
-import {
-  Alert,
-  LayoutAnimation,
-  Linking,
-  Platform,
-  Share,
-  UIManager,
-} from "react-native";
+import { LayoutAnimation } from "react-native";
 
 import { appTheme } from "./theme.logic";
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+import { useAppPreferences } from "../state/AppPreferencesProvider";
+import { CAMERA_TIMER_OPTIONS } from "../services/stamp.service";
 
 export type SettingsMenuItem = {
   id: string;
-  icon: string;
+  icon: keyof typeof import("@expo/vector-icons").Ionicons.glyphMap;
   title: string;
   subtitle: string;
   details: string;
@@ -32,6 +20,8 @@ export type SettingsMenuItem = {
 
 export function useSettingsLogic() {
   const navigation = useNavigation<any>();
+  const { preferences, captureHistory, setCameraSoundEnabled, setTimerSeconds } =
+    useAppPreferences();
   const version = Constants.expoConfig?.version || "1.0.0";
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -40,85 +30,100 @@ export function useSettingsLogic() {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message:
-          "Check out this amazing GPS Camera app! Capture photos and videos with location tags.",
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const openLink = (_url: string) => {
-    Alert.alert("Coming Soon", "This page is under construction.");
-  };
-
-  const handleSupport = () => {
-    Linking.openURL("mailto:support@gpscamera.app");
+  const cycleTimer = () => {
+    const currentIndex = CAMERA_TIMER_OPTIONS.indexOf(preferences.timerSeconds);
+    const nextValue =
+      CAMERA_TIMER_OPTIONS[(currentIndex + 1) % CAMERA_TIMER_OPTIONS.length];
+    setTimerSeconds(nextValue);
   };
 
   const menuItems: SettingsMenuItem[] = useMemo(
     () => [
       {
-        id: "no-ads",
-        icon: "shield-checkmark",
-        title: "No Ads",
-        subtitle: "Enjoy a completely ad-free experience",
+        id: "location-mode",
+        icon: "location",
+        title: "Location Mode",
+        subtitle:
+          preferences.locationMode === "manual"
+            ? "Manual coordinates are active"
+            : "Automatic browser GPS is active",
         details:
-          "This application is built to be a premium tool. We believe in an uninterrupted experience, which is why you will never see third-party advertisements clogging your view or tracking your usage. Focus entirely on your photography without distractions.",
-        actionLabel: "Learn More",
-        action: () =>
-          Alert.alert("Premium Status", "You are using the Ad-Free version."),
-        color: appTheme.palette.lagoon,
+          "Switch between automatic browser geolocation and a saved manual coordinate set. Manual mode is useful when you need a fixed project location or geolocation is unavailable.",
+        actionLabel: "Open Location Settings",
+        action: () => navigation.navigate("LocationSettings"),
+        color: appTheme.palette.accent,
       },
       {
-        id: "privacy",
-        icon: "lock-closed",
-        title: "Privacy Policy",
-        subtitle: "Read our data usage policy",
+        id: "stamp-settings",
+        icon: "options",
+        title: "Stamp Settings",
+        subtitle: `${preferences.selectedProjectName} | Timer ${preferences.timerSeconds === 0 ? "Off" : `${preferences.timerSeconds}s`}`,
         details:
-          "Your privacy is paramount. All GPS data and photos are processed locally on your device. We do not upload your media to any cloud servers without your explicit action. Location data is collected strictly for the purpose of stamping your photos and videos with accurate coordinates.",
-        actionLabel: "Read Full Policy",
-        action: () => openLink("https://example.com/privacy"),
+          "Manage project naming, stamp field visibility, web-safe shutter feedback, and timer countdown behavior. These settings are stored locally in the browser.",
+        actionLabel: "Open Stamp Settings",
+        action: () => navigation.navigate("StampSettings"),
         color: appTheme.colors.textPrimary,
       },
       {
-        id: "share",
-        icon: "share-social",
-        title: "Share App",
-        subtitle: "Spread the word with friends",
+        id: "timer",
+        icon: "timer",
+        title: "Capture Timer",
+        subtitle:
+          preferences.timerSeconds === 0
+            ? "Countdown disabled"
+            : `${preferences.timerSeconds} second countdown`,
         details:
-          "Love the app? Share it with your friends and colleagues! This tool generates a direct download link or store listing so others can enjoy the same precise, ad-free GPS camera experience. Sharing helps us grow and improve.",
-        actionLabel: "Share Now",
-        action: handleShare,
+          "Cycle between Off, 3s, 5s, and 10s. The active timer is applied before photo capture or video recording begins.",
+        actionLabel: "Cycle Timer",
+        action: cycleTimer,
         color: appTheme.colors.textSecondary,
       },
       {
-        id: "support",
-        icon: "mail",
-        title: "Support",
-        subtitle: "Get help or send feedback",
+        id: "camera-sound",
+        icon: "volume-high",
+        title: "Camera Sound",
+        subtitle: preferences.cameraSoundEnabled
+          ? "Web shutter feedback enabled"
+          : "Web shutter feedback disabled",
         details:
-          "We are here to help. Whether you've found a bug, want to request a feature, or just want to say hi, our support team is available. We aim to respond to all inquiries within 24 hours.",
-        actionLabel: "Email Support",
-        action: handleSupport,
+          "This controls web-safe sound feedback after captures. Browsers may still suppress audio until the page has received a user interaction.",
+        actionLabel: preferences.cameraSoundEnabled ? "Disable Sound" : "Enable Sound",
+        action: () => setCameraSoundEnabled(!preferences.cameraSoundEnabled),
         color: appTheme.colors.textSecondary,
       },
       {
-        id: "terms",
-        icon: "document-text",
-        title: "Terms of Service",
-        subtitle: "Review our terms of usage",
+        id: "map",
+        icon: "map",
+        title: "Full Map",
+        subtitle: "Open the full-screen OpenStreetMap view",
         details:
-          "By using this application, you agree to our standard terms of service. These terms ensure fair usage and protect your rights as a user. We recommend reading them to understand your responsibilities and our commitments to you.",
-        actionLabel: "View Terms",
-        action: () => openLink("https://example.com/terms"),
+          "Use the expanded map for a clearer location preview and to copy the current automatic position into manual mode when needed.",
+        actionLabel: "Open Map",
+        action: () => navigation.navigate("Map"),
+        color: appTheme.palette.accent,
+      },
+      {
+        id: "history",
+        icon: "images",
+        title: "Capture History",
+        subtitle: `${captureHistory.length} captures in this browser session`,
+        details:
+          "Recent captured images are kept for the current browser session. Open, download, or remove them from the session history.",
+        actionLabel: "Open History",
+        action: () => navigation.navigate("CaptureHistory"),
         color: appTheme.colors.textMuted,
       },
     ],
-    [],
+    [
+      captureHistory.length,
+      navigation,
+      preferences.cameraSoundEnabled,
+      preferences.locationMode,
+      preferences.selectedProjectName,
+      preferences.timerSeconds,
+      setCameraSoundEnabled,
+      setTimerSeconds,
+    ],
   );
 
   const sortedItems = useMemo(

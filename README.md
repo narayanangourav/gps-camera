@@ -1,405 +1,161 @@
-# GPS CAMERA
+# GPS Camera
 
-GPS Camera is an Expo React Native application for capturing photos and videos with GPS-based metadata overlays such as location, date, time, weather, latitude, and longitude.
+GPS Camera is a web-only Expo/React Native app for capturing browser photos with GPS, OpenStreetMap context, and configurable stamp overlays.
 
-## License And Usage
+## What it does
 
-This project is proprietary and all rights are reserved.
+- browser camera capture
+- automatic or manual location mode
+- OpenStreetMap-first map preview with visible attribution
+- timestamp, address, coordinates, weather, accuracy, altitude, timezone, wind, humidity, and pressure stamp fields when enabled and available
+- project or site naming in exported filenames
+- session capture history
+- browser download flow
+- Web Share support when the browser supports the Web Share API
 
-- Copyright = ownership (automatic when you create code).
-- No LICENSE file is provided for open use; this project is `UNLICENSED` (all rights reserved).
-- No open-source license (MIT, AGPL, GPL, etc.) is granted for this repository
-- Copying, modifying, redistributing, sublicensing, or commercial use is not permitted without explicit written permission from the owner
+## Mapping and platform policy
 
-## Prerequisites
+- web-only
+- OpenStreetMap is the default map source
+- map tile URLs stay configurable through `EXPO_PUBLIC_TILE_URL_TEMPLATE`
+- no Google Maps
+- no Mapbox
+- no paid map provider requirement
+- no Android build
+- no iOS build
+- no native mobile deployment path
 
-Before starting, make sure the following are installed:
+## Local development
 
-- Node.js LTS
-- npm
-- Git
-- Android Studio with an emulator, or a physical Android device with USB debugging enabled
-- Xcode if you want to run or build for iOS on macOS
-
-Optional:
-
-- Expo Go on your phone for quick testing
-- `eas-cli` if you plan to use EAS cloud builds
-
-## Project Requirements
-
-This project uses:
-
-- Expo
-- React Native
-- TypeScript
-- `expo-camera`
-- `expo-location`
-- `expo-media-library`
-- `react-native-maps`
-
-## Installation
-
-Clone the repository and install dependencies:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-## Environment Configuration
-
-The app supports custom map tile configuration through `.env`.
-
-Start from the example file:
+Start the web dev server:
 
 ```bash
-cp .env.example .env
-```
-
-On Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Example:
-
-```env
-EXPO_PUBLIC_TILE_URL_TEMPLATE=https://tile.openstreetmap.org/{z}/{x}/{y}.png
-```
-
-Rules:
-
-- Keep `.env` local only and do not commit it
-- Commit `.env.example` with safe placeholder or public values only
-- Keep machine-specific values like `ANDROID_HOME` in your system environment, not in `.env`
-
-## How To Start The Project
-
-Start the Expo development server on `http://localhost:8000`:
-
-```bash
-npm run start
-```
-
-Run directly on specific platforms:
-
-```bash
-npm run android
-```
-
-```bash
-npm run ios
-```
-
-```bash
-npm run web
-```
-
-## Development Notes
-
-- Local development runs on port `8000`
-- `npm run android` starts Expo and opens the Android target
-- `npm run ios` works only on macOS with Xcode installed
-- `npm run web` starts the app in the browser
-- The app will ask for camera, location, and media-library permissions at runtime
-
-## Dev Server Vs Build
-
-These commands do not create a final distributable build:
-
-- `npm run start`
-- `npm run android`
-- `npm run ios`
-- `npm run web`
-
-They only start the Expo development server.
-
-## How To Build
-
-### Whole Project Build
-
-Build the local project deliverables available on Windows:
-
-```bash
-npm run build
-```
-
-This runs:
-
-- TypeScript typecheck
-- Web production export
-- Android release APK build
-
-Output locations:
-
-- Web: `dist`
-- Android release APK: `android/app/build/outputs/apk/release/app-release.apk`
-
-### Web Build
-
-Build only the web production output:
-
-```bash
-npm run build:web
-```
-
-Equivalent direct Expo command:
-
-```bash
-npx expo export -p web
-```
-
-The exported files will be generated in:
-
-- `dist`
-
-Preview the production web build on `http://localhost:8081`:
-
-```bash
-npm run preview:web
-```
-
-### Android Local Native Build
-
-Android local native build outputs are generated here after `npx expo prebuild -p android` and Android build commands:
-
-- APKs: `d:\Learnings\GPS Camera\gps-camera\android\app\build\outputs\apk\`
-- AABs/bundles: `d:\Learnings\GPS Camera\gps-camera\android\app\build\outputs\bundle\`
-
-Build commands:
-
-```bash
-npx expo prebuild -p android
-```
-
-```powershell
-cd android
-.\gradlew assembleDebug
-.\gradlew assembleRelease
-.\gradlew bundleRelease
-```
-
-### Android Debug APK
-
-Debug APKs are for Metro-based development only. They are not meant for direct installation as a standalone app.
-
-Build only the Android debug APK:
-
-```bash
-npm run build:apk:debug
-```
-
-Debug APK output:
-
-- `android/app/build/outputs/apk/debug/app-debug.apk`
-
-If you install a debug APK directly, you must run Metro or you will see the `Unable to load script` error.
-
-### Android Release APK
-
-Build an installable Android release APK locally:
-
-```bash
-npm run build:android
+npm run dev
 ```
 
 Equivalent commands:
 
 ```bash
-npm run build:apk
-npm run build:apk:release
-```
-
-Release APK output:
-
-- `android/app/build/outputs/apk/release/app-release.apk`
-
-### Android Release AAB
-
-Build a release Android App Bundle locally:
-
-```bash
-npm run build:aab
-```
-
-Equivalent command:
-
-```bash
-npm run build:android:bundle
-```
-
-Release bundle output:
-
-- `android/app/build/outputs/bundle/release/app-release.aab`
-
-### iOS Build
-
-Local iOS builds still require macOS. On Windows, `npm run build` does not build iOS.
-
-If you are on macOS, you can use:
-
-```bash
-npm run build:ios
-```
-
-Typical local iOS build output is generated under:
-
-- `ios/build/`
-
-## Which File To Share Or Install
-
-- Web: use the `dist` folder
-- Android: use the generated `.apk` or `.aab` inside `android/app/build/outputs/...`
-- iOS: use the generated app/archive from the `ios/build` flow
-
-## GitHub Release Build
-
-A GitHub Actions workflow is included to build signed Android release artifacts whenever you push a Git tag.
-
-Workflow file:
-
-- `.github/workflows/build-android-release.yml`
-
-Trigger:
-
-- Push any Git tag
-
-Generated release files:
-
-- `android/app/build/outputs/apk/release/app-release.apk`
-- `android/app/build/outputs/bundle/release/app-release.aab`
-
-Required GitHub repository secrets:
-
-- `ANDROID_KEYSTORE_BASE64`
-- `ANDROID_KEYSTORE_PASSWORD`
-- `ANDROID_KEY_ALIAS`
-- `ANDROID_KEY_PASSWORD`
-
-The workflow uploads both files as workflow artifacts and attaches them to the GitHub release for that tag.
-
-## Optional EAS Build
-
-If you want cloud builds, install EAS CLI:
-
-```bash
-npm install -g eas-cli
-```
-
-Login and configure EAS:
-
-```bash
-eas login
-```
-
-Then build for Android or iOS:
-
-```bash
-eas build -p android
-```
-
-```bash
-eas build -p ios
-```
-
-Note: EAS is optional and may require an `eas.json` file depending on your build setup.
-
-## App Configuration
-
-Current app metadata:
-
-- App name: `GPS CAMERA`
-- Version: `1.0.0`
-- App icon: `assets/app-icon.png`
-
-Main config file:
-
-- `app.json`
-
-## Permissions Used
-
-The app requests:
-
-- Camera permission
-- Foreground location permission
-- Media library permission
-
-## Useful Commands
-
-```bash
-npm install
-```
-
-```bash
 npm run start
-```
-
-```bash
-npm run android
-```
-
-```bash
-npm run ios
 ```
 
 ```bash
 npm run web
 ```
 
+## Environment
+
+Copy the example environment file:
+
 ```bash
-npm run build
+cp .env.example .env
 ```
+
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Set the tile template:
+
+```env
+EXPO_PUBLIC_TILE_URL_TEMPLATE=https://tile.openstreetmap.org/{z}/{x}/{y}.png
+```
+
+## Validation
+
+Unit tests:
+
+```bash
+npm run test:unit
+```
+
+Typecheck:
+
+```bash
+npm run typecheck
+```
+
+Build the static web export:
 
 ```bash
 npm run build:web
 ```
 
-```bash
-npm run build:android
-```
-
-```bash
-npm run build:apk:release
-```
-
-```bash
-npm run build:aab
-```
-
-```bash
-npm run build:ios
-```
+Preview the built export:
 
 ```bash
 npm run preview:web
 ```
 
-```bash
-npx tsc --noEmit
-```
+## GitHub Pages deployment
 
-## Project Structure
+This repository includes a web-only GitHub Pages workflow at [`.github/workflows/deploy-github-pages.yml`](./.github/workflows/deploy-github-pages.yml).
+
+Workflow behavior:
+
+- runs on pushes to `main`
+- supports manual dispatch
+- runs `npm ci`
+- runs `npm run typecheck`
+- runs `npm run test:unit`
+- runs `npm run build:web`
+- uploads `dist`
+- deploys with official GitHub Pages actions
+
+Setup notes:
+
+1. Enable GitHub Pages in the repository settings and choose GitHub Actions as the source.
+2. If your default branch is not `main`, update the branch trigger in [`.github/workflows/deploy-github-pages.yml`](./.github/workflows/deploy-github-pages.yml).
+3. `npm run build:web` now normalizes the exported HTML for GitHub Pages by converting root-absolute asset references to relative paths, generating `404.html`, and adding `.nojekyll`.
+
+## Browser requirements and limitations
+
+Permissions required:
+
+- camera
+- location
+
+Known limitations:
+
+- camera access requires HTTPS or `localhost`
+- geolocation requires permission and HTTPS or `localhost`
+- Web Share API support varies by browser
+- capture history is currently session-only
+- browser sound feedback can still be suppressed until the page receives user interaction
+
+## OpenStreetMap attribution
+
+OpenStreetMap attribution remains visible anywhere map content is rendered in the app.
+
+## License status
+
+License to be decided.
+
+- no `LICENSE` file is committed yet
+- `package.json` is currently marked `UNLICENSED`
+
+## Project structure
 
 ```text
 src/
   components/
   logics/
+  models/
   screens/
+  services/
+  state/
+tests/
 assets/
+scripts/
 App.tsx
 app.json
 index.ts
-```
-
-## Troubleshooting
-
-- If location is not fetched, make sure device GPS is enabled
-- If camera is not opening, confirm camera permission is granted
-- If you see `Unable to load script` after installing an APK, you installed a debug APK. Use the release APK instead, or run Metro for debug builds
-- If the web map does not load, verify your internet connection and tile configuration
-- If Metro behaves unexpectedly, restart it with:
-
-```bash
-npx expo start --clear
 ```

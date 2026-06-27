@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Animated, SafeAreaView, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  SafeAreaView,
+  Image,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -23,7 +30,10 @@ export default function Home() {
         style={styles.background}
         {...webDomProps("home-background", "home-background")}
       >
-        <View style={styles.content} {...webDomProps("home-content", "home-content")}>
+        <View
+          style={styles.content}
+          {...webDomProps("home-content", "home-content")}
+        >
           <Animated.View
             style={[
               styles.heroContent,
@@ -46,64 +56,68 @@ export default function Home() {
               />
             </View>
 
-            <Text style={styles.title} {...webDomProps("home-title", "home-title")}>
+            <Text
+              style={styles.title}
+              {...webDomProps("home-title", "home-title")}
+            >
               GPS Camera
             </Text>
+            <Text style={styles.eyebrow}>Web-only field capture</Text>
             <Text
               style={styles.subtitle}
               {...webDomProps("home-subtitle", "home-subtitle")}
             >
-              Capture moments with precision.{"\n"}
-              Overlay location, date, and time instantly.
+              Clean browser-based photo capture with GPS, OpenStreetMap,
+              timestamp overlays, and export-ready evidence shots.
             </Text>
 
             <View
-              style={styles.featureList}
+              style={styles.featurePanel}
               {...webDomProps("home-feature-list", "home-feature-list")}
             >
               <FeatureItem
                 icon="map"
-                text="Live Location Tagging"
+                text="OpenStreetMap-first location stamping"
                 selectorKey="map"
               />
               <FeatureItem
-                icon="time"
-                text="Timestamp Verification"
+                icon="navigate"
+                text="Manual or live coordinate modes"
                 selectorKey="time"
               />
               <FeatureItem
-                icon="shield-checkmark"
-                text="Secure & Ad-Free"
+                icon="share-social"
+                text="Browser download and Web Share support"
                 selectorKey="secure"
               />
             </View>
+
+            <TouchableOpacity
+              style={styles.primaryAction}
+              activeOpacity={0.88}
+              onPress={goToOverview}
+              {...webDomProps("home-next-button", "home-next-button")}
+            >
+              <LinearGradient
+                colors={appTheme.gradients.primary}
+                style={styles.primaryActionGradient}
+                {...webDomProps("home-next-gradient", "home-next-gradient")}
+              >
+                <Text style={styles.primaryActionText}>Open Workspace</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color={appTheme.colors.textOnDark}
+                />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <Text style={styles.metaNote}>
+              Requires browser camera and location permission. Designed for web
+              export and GitHub Pages hosting.
+            </Text>
           </Animated.View>
         </View>
-
-        {/* Floating Next Button */}
-        <Animated.View
-          style={[styles.buttonContainer, { opacity: fadeAnim }]}
-          {...webDomProps("home-next-container", "home-next-container")}
-        >
-          <TouchableOpacity
-            style={styles.nextButton}
-            activeOpacity={0.8}
-            onPress={goToOverview}
-            {...webDomProps("home-next-button", "home-next-button")}
-          >
-            <LinearGradient
-              colors={appTheme.gradients.primary}
-              style={styles.gradientButton}
-              {...webDomProps("home-next-gradient", "home-next-gradient")}
-            >
-              <Ionicons
-                name="arrow-forward"
-                size={24}
-                color={appTheme.colors.textOnLight}
-              />
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
       </LinearGradient>
     </SafeAreaView>
   );

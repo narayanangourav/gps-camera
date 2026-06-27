@@ -44,6 +44,16 @@ export const useStyles = () => {
             desktop: 920,
           }),
         },
+        recordingTimerPill: {
+          backgroundColor: appTheme.colors.recordSolid,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          borderRadius: 20,
+        },
+        recordingTimerText: {
+          color: appTheme.colors.textOnDark,
+          fontWeight: "bold",
+        },
         overlayCard: {
           width: "100%",
           maxWidth: responsiveValue(width, {
@@ -121,6 +131,16 @@ export const useStyles = () => {
             tablet: 14,
             desktop: 15,
           }),
+        },
+        dateTimeSubText: {
+          color: appTheme.colors.textSecondary,
+          fontWeight: "600",
+          fontSize: responsiveValue(width, {
+            mobile: 10,
+            tablet: 11,
+            desktop: 12,
+          }),
+          marginTop: 2,
         },
         overlayBody: {
           flexDirection: "row",
@@ -263,13 +283,22 @@ export const useStyles = () => {
           }),
           marginTop: 6,
         },
+        locationModeText: {
+          color: appTheme.colors.textPrimary,
+          fontSize: responsiveValue(width, {
+            mobile: 12,
+            tablet: 13,
+            desktop: 14,
+          }),
+          fontWeight: "600",
+        },
         overlayFooter: {
           width: "100%",
           flexDirection: "row",
-          justifyContent: "space-between",
+          justifyContent: "flex-start",
           alignItems: "center",
           alignSelf: "stretch",
-          flexWrap: "nowrap",
+          flexWrap: "wrap",
           gap: responsiveValue(width, {
             mobile: 4,
             tablet: 8,
@@ -310,20 +339,17 @@ export const useStyles = () => {
           }),
         },
         weatherPill: {
-          width: responsiveValue(width, {
+          minWidth: responsiveValue(width, {
             mobile: 58,
             tablet: 72,
             desktop: 82,
           }),
-          flexShrink: 0,
-          paddingHorizontal: responsiveValue(width, {
-            mobile: 3,
-            tablet: 6,
-            desktop: 8,
-          }),
         },
         coordinatePill: {
-          flex: 1,
+          maxWidth: "100%",
+        },
+        metaPill: {
+          maxWidth: "100%",
         },
         pillText: {
           color: appTheme.colors.textPrimary,
@@ -335,6 +361,29 @@ export const useStyles = () => {
           fontWeight: "600",
           flexShrink: 1,
           textAlign: "center",
+        },
+        pillTextContainer: {
+          maxWidth: responsiveValue(width, {
+            mobile: 118,
+            tablet: 132,
+            desktop: 168,
+          }),
+          overflow: "hidden",
+        },
+        countdownOverlay: {
+          ...StyleSheet.absoluteFillObject,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(22, 59, 99, 0.24)",
+        },
+        countdownText: {
+          color: appTheme.colors.textOnDark,
+          fontSize: responsiveValue(width, {
+            mobile: 64,
+            tablet: 76,
+            desktop: 88,
+          }),
+          fontWeight: "800",
         },
         controlsContainer: {
           height: responsiveValue(width, {
@@ -417,7 +466,22 @@ export const useStyles = () => {
         },
         captureActive: {
           transform: [{ scale: 0.9 }],
-          backgroundColor: appTheme.palette.mist,
+          backgroundColor: appTheme.palette.accentSoft,
+        },
+        captureButtonVideoIdle: {
+          backgroundColor: appTheme.colors.record,
+        },
+        captureButtonRecording: {
+          borderRadius: 4,
+          width: 30,
+          height: 30,
+          backgroundColor: appTheme.colors.record,
+        },
+        captureButtonRecordingInner: {
+          width: "100%",
+          height: "100%",
+          backgroundColor: appTheme.colors.recordSolid,
+          borderRadius: 4,
         },
         permissionContainer: {
           flex: 1,

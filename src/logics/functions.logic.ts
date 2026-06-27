@@ -1,4 +1,4 @@
-import * as Location from "expo-location";
+import { MAP_CONFIG } from "../services/mapConfig.service";
 
 export type MapRegion = {
   latitude: number;
@@ -13,12 +13,7 @@ export type MapCoordinate = {
 };
 
 export const TARGET_ACCURACY_METERS = 25;
-
-const DEFAULT_TILE_URL_TEMPLATE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-
-export const MAP_TILE_URL_TEMPLATE =
-  process.env.EXPO_PUBLIC_TILE_URL_TEMPLATE?.trim() ||
-  DEFAULT_TILE_URL_TEMPLATE;
+export const MAP_TILE_URL_TEMPLATE = MAP_CONFIG.tileUrlTemplate;
 
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
@@ -76,7 +71,16 @@ export const getTileUrl = (latitude: number, longitude: number, zoom: number) =>
 };
 
 export const formatAddress = (
-  address: Location.LocationGeocodedAddress | null | undefined,
+  address:
+    | {
+        name?: string | null;
+        street?: string | null;
+        city?: string | null;
+        region?: string | null;
+        country?: string | null;
+      }
+    | null
+    | undefined,
 ): string | null => {
   if (!address) return null;
   const line1 = [address.name, address.street].filter(Boolean).join(", ");

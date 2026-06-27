@@ -11,6 +11,7 @@ import {
   wrapTileX,
 } from "../../logics/functions.logic";
 import { webDomProps } from "../../logics/webDom.logic";
+import MapAttribution from "../MapAttribution";
 import LocationPointer from "../LocationPointer";
 import { styles } from "./styles";
 
@@ -101,6 +102,7 @@ export default function OverviewMap({ region }: OverviewMapProps) {
       <View style={styles.webPin} {...webDomProps("overview-map-pin", "overview-map-pin")}>
         <LocationPointer size={30} />
       </View>
+      <MapAttribution />
     </View>
   );
 }

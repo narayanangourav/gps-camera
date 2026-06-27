@@ -1,227 +1,96 @@
 import { CameraView, FlashMode, useCameraPermissions } from "expo-camera";
 import * as Location from "expo-location";
-import * as MediaLibrary from "expo-media-library";
 import { useEffect, useRef, useState } from "react";
 import { Alert, Platform } from "react-native";
 import ViewShot from "react-native-view-shot";
 
-type CaptureMode = "picture" | "video";
+import { AppLocation, LocationAddress } from "../models/location.model";
+import { CameraCaptureMode } from "../models/preferences.model";
+import { WeatherSnapshot } from "../models/weather.model";
+import { useAppPreferences } from "../state/AppPreferencesProvider";
+import {
+  buildAddressFromExpo,
+  fetchRemoteLocationAddress,
+  selectActiveLocation,
+  toAppLocationFromExpo,
+} from "../services/location.service";
+import {
+  buildDownloadFileName,
+  createCapturedMediaItem,
+} from "../services/stamp.service";
+import {
+  EMPTY_WEATHER_SNAPSHOT,
+  fetchWeatherSnapshot,
+} from "../services/weather.service";
 
-type AddressLines = {
-  line1: string;
-  line2: string;
-};
+type CaptureMode = CameraCaptureMode;
 
-const buildAddressLines = (
-  line1Candidates: string[],
-  line2Parts: string[],
-): AddressLines | null => {
-  const line1 = line1Candidates[0] || null;
-  const normalizedLine1 = line1 ? normalizeAddressToken(line1) : null;
-  const filteredLine2Parts = line2Parts.filter((part) => {
-    if (!normalizedLine1) return true;
-    return normalizeAddressToken(part) !== normalizedLine1;
-  });
-
-  if (!line1 && filteredLine2Parts.length === 0) {
-    return null;
+const createAddressLines = (
+  address: LocationAddress | null,
+  fallbackLatitude: number | null,
+  fallbackLongitude: number | null,
+) => {
+  if (address) {
+    return {
+      line1: address.line1,
+      line2: address.line2,
+    };
   }
 
-  if (line1) {
+  if (fallbackLatitude === null || fallbackLongitude === null) {
     return {
-      line1,
-      line2: filteredLine2Parts.join(", "),
+      line1: "Fetching location...",
+      line2: "",
     };
   }
 
   return {
-    line1: filteredLine2Parts[0],
-    line2: filteredLine2Parts.slice(1).join(", "),
+    line1: `${fallbackLatitude.toFixed(6)}, ${fallbackLongitude.toFixed(6)}`,
+    line2: "Address unavailable",
   };
 };
 
-const normalizeAddressToken = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-
-const splitDisplayNameParts = (displayName?: string | null) => {
-  if (!displayName) return [];
-
-  const parts: string[] = [];
-  displayName
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .forEach((part) => {
-      pushUniqueText(parts, part);
-    });
-
-  return parts;
-};
-
-const pushUniqueText = (target: string[], value?: string | null) => {
-  if (!value) return;
-  const trimmed = value.trim();
-  if (!trimmed) return;
-  const normalized = normalizeAddressToken(trimmed);
-  if (!normalized) return;
-  const exists = target.some(
-    (existing) => normalizeAddressToken(existing) === normalized,
-  );
-  if (!exists) target.push(trimmed);
-};
-
-const buildAddressLinesFromExpo = (
-  address: Location.LocationGeocodedAddress | null | undefined,
-): AddressLines | null => {
-  if (!address) return null;
-
-  const line1Candidates: string[] = [];
-  pushUniqueText(
-    line1Candidates,
-    [address.streetNumber, address.street].filter(Boolean).join(", "),
-  );
-  pushUniqueText(line1Candidates, address.name);
-  const line1 = line1Candidates[0] || null;
-
-  const line2Parts: string[] = [];
-  pushUniqueText(line2Parts, address.district);
-  pushUniqueText(line2Parts, address.city);
-  pushUniqueText(line2Parts, address.region);
-  pushUniqueText(line2Parts, address.postalCode);
-  pushUniqueText(line2Parts, address.country);
-
-  return buildAddressLines(line1Candidates, line2Parts);
-};
-
-const buildAddressLinesFromNominatim = (data: any): AddressLines | null => {
-  const a = data?.address ?? {};
-  const displayNameParts = splitDisplayNameParts(data?.display_name);
-
-  const line1Parts: string[] = [];
-  pushUniqueText(
-    line1Parts,
-    [
-      a.house_number || a.house || a.house_name || a.building || a.shop,
-      a.road || a.residential || a.pedestrian || a.footway || a.path,
-    ]
-      .filter(Boolean)
-      .join(", "),
-  );
-  pushUniqueText(
-    line1Parts,
-    [a.house_name || a.building || a.amenity || a.office, a.road]
-      .filter(Boolean)
-      .join(", "),
-  );
-  pushUniqueText(line1Parts, a.road);
-  pushUniqueText(line1Parts, a.residential);
-  pushUniqueText(line1Parts, a.amenity);
-  pushUniqueText(line1Parts, a.building);
-  pushUniqueText(line1Parts, data?.name);
-  pushUniqueText(line1Parts, displayNameParts[0]);
-  pushUniqueText(line1Parts, displayNameParts[1]);
-  const line1 = line1Parts[0] || null;
-
-  const line2Parts: string[] = [];
-  pushUniqueText(
-    line2Parts,
-    a.suburb || a.neighbourhood || a.city_district || a.hamlet,
-  );
-  pushUniqueText(line2Parts, a.city || a.town || a.village);
-  pushUniqueText(line2Parts, a.state);
-  pushUniqueText(line2Parts, a.postcode);
-  pushUniqueText(line2Parts, a.country);
-  if (line2Parts.length === 0) {
-    displayNameParts.slice(1).forEach((part) => {
-      pushUniqueText(line2Parts, part);
-    });
+const playShutterFeedback = () => {
+  if (Platform.OS !== "web" || typeof window === "undefined") {
+    return;
   }
 
-  return buildAddressLines(line1Parts, line2Parts);
-};
+  const AudioContextCtor =
+    window.AudioContext ||
+    (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
-const buildAddressLinesFromBigData = (data: any): AddressLines | null => {
-  const informative = Array.isArray(data?.localityInfo?.informative)
-    ? data.localityInfo.informative
-    : [];
-
-  const roadInfo = informative.find((item: any) =>
-    /road|street|avenue|lane|nagar|main/i.test(
-      `${item?.description ?? ""} ${item?.name ?? ""}`,
-    ),
-  );
-  const houseInfo = informative.find((item: any) =>
-    /house|building|door|plot/i.test(
-      `${item?.description ?? ""} ${item?.name ?? ""}`,
-    ),
-  );
-
-  const line1Parts: string[] = [];
-  pushUniqueText(
-    line1Parts,
-    [houseInfo?.name, roadInfo?.name].filter(Boolean).join(", "),
-  );
-  pushUniqueText(line1Parts, roadInfo?.name);
-  pushUniqueText(line1Parts, data?.locality);
-  const line1 = line1Parts[0] || null;
-
-  const line2Parts: string[] = [];
-  pushUniqueText(line2Parts, data?.locality);
-  pushUniqueText(line2Parts, data?.city);
-  pushUniqueText(line2Parts, data?.principalSubdivision);
-  pushUniqueText(line2Parts, data?.postcode);
-  pushUniqueText(line2Parts, data?.countryName);
-
-  return buildAddressLines(line1Parts, line2Parts);
-};
-
-const fetchRemoteAddressLines = async (
-  loc: Location.LocationObject,
-): Promise<AddressLines | null> => {
-  try {
-    const nominatim = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${loc.coords.latitude}&lon=${loc.coords.longitude}&addressdetails=1&zoom=18&namedetails=1`,
-      { headers: { "Accept-Language": "en" } },
-    );
-    if (nominatim.ok) {
-      const data = await nominatim.json();
-      const lines = buildAddressLinesFromNominatim(data);
-      if (lines) return lines;
-    }
-  } catch (_error) {
-    // Fall through to the next provider.
+  if (!AudioContextCtor) {
+    return;
   }
 
-  try {
-    const bigData = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${loc.coords.latitude}&longitude=${loc.coords.longitude}&localityLanguage=en`,
-    );
-    if (bigData.ok) {
-      const data = await bigData.json();
-      const lines = buildAddressLinesFromBigData(data);
-      if (lines) return lines;
-    }
-  } catch (_error) {
-    // Fall through to local reverse geocode.
-  }
-
-  return null;
+  const context = new AudioContextCtor();
+  const oscillator = context.createOscillator();
+  const gainNode = context.createGain();
+  oscillator.type = "triangle";
+  oscillator.frequency.setValueAtTime(880, context.currentTime);
+  gainNode.gain.setValueAtTime(0.001, context.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.1, context.currentTime + 0.01);
+  gainNode.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.12);
+  oscillator.connect(gainNode);
+  gainNode.connect(context.destination);
+  oscillator.start();
+  oscillator.stop(context.currentTime + 0.12);
+  oscillator.onended = () => {
+    void context.close();
+  };
 };
 
 export function useCameraLogic(mode: CaptureMode) {
+  const {
+    preferences,
+    addCaptureHistoryItem,
+  } = useAppPreferences();
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [locationPermission] = Location.useForegroundPermissions();
-  const [mediaLibraryPermission, requestMediaLibraryPermission] =
-    MediaLibrary.usePermissions();
-
-  const [location, setLocation] = useState<Location.LocationObject | null>(
+  const [automaticLocation, setAutomaticLocation] = useState<AppLocation | null>(
     null,
   );
-  const [addressLines, setAddressLines] = useState<AddressLines | null>(null);
-  const [weather, setWeather] = useState<any>(null);
+  const [weather, setWeather] = useState<WeatherSnapshot>(EMPTY_WEATHER_SNAPSHOT);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
   const [facing, setFacing] = useState<"back" | "front">("back");
@@ -230,65 +99,72 @@ export function useCameraLogic(mode: CaptureMode) {
   const [isCapturing, setIsCapturing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [countdownRemaining, setCountdownRemaining] = useState<number | null>(null);
 
   const viewShotRef = useRef<ViewShot>(null);
   const cameraRef = useRef<CameraView>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const captureTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const location = selectActiveLocation({
+    automaticLocation,
+    manualLocation: preferences.manualLocation,
+    mode: preferences.locationMode,
+  });
+  const addressLines = createAddressLines(
+    location?.address ?? null,
+    location?.latitude ?? null,
+    location?.longitude ?? null,
+  );
 
   useEffect(() => {
     (async () => {
       try {
-        if (!cameraPermission?.granted) await requestCameraPermission();
-        if (!mediaLibraryPermission?.granted) {
-          await requestMediaLibraryPermission();
+        if (!cameraPermission?.granted) {
+          await requestCameraPermission();
         }
-      } catch (error) {
-        console.log("Permission request error:", error);
+      } catch (_error) {
+        setLocationError("Unable to request camera access.");
       }
     })();
-  }, [mode]);
+  }, [cameraPermission?.granted, requestCameraPermission]);
 
   const updateLocationMetadata = async (loc: Location.LocationObject) => {
-    setLocation(loc);
     setLocationError(null);
-    const coordinateLine = `${loc.coords.latitude.toFixed(6)}, ${loc.coords.longitude.toFixed(6)}`;
-
-    const remoteLines = await fetchRemoteAddressLines(loc);
-    if (remoteLines) {
-      setAddressLines(remoteLines);
-    } else {
+    const remoteAddress = await fetchRemoteLocationAddress(
+      loc.coords.latitude,
+      loc.coords.longitude,
+    );
+    let address = remoteAddress;
+    if (!address) {
       try {
         const reverseGeocode = await Location.reverseGeocodeAsync({
           latitude: loc.coords.latitude,
           longitude: loc.coords.longitude,
         });
-        const lines = buildAddressLinesFromExpo(reverseGeocode[0]);
-        setAddressLines(
-          lines || {
-            line1: coordinateLine,
-            line2: "Address unavailable",
-          },
-        );
+        address = buildAddressFromExpo(reverseGeocode[0]);
       } catch (_error) {
-        setAddressLines({
-          line1: coordinateLine,
-          line2: "Address unavailable",
-        });
+        address = null;
       }
     }
 
+    const nextLocation = toAppLocationFromExpo(loc, address);
+    setAutomaticLocation(nextLocation);
+
     try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${loc.coords.latitude}&longitude=${loc.coords.longitude}&current_weather=true`,
+      setWeather(
+        await fetchWeatherSnapshot(loc.coords.latitude, loc.coords.longitude),
       );
-      const data = await response.json();
-      setWeather(data.current_weather);
-    } catch (error) {
-      console.log("Weather fetch error", error);
+    } catch (_error) {
+      setWeather(EMPTY_WEATHER_SNAPSHOT);
     }
   };
 
   const ensureLocationReady = async (): Promise<boolean> => {
+    if (preferences.locationMode === "manual" && preferences.manualLocation) {
+      return true;
+    }
+
     try {
       const existing = await Location.getForegroundPermissionsAsync();
       let granted = existing.granted;
@@ -309,8 +185,7 @@ export function useCameraLogic(mode: CaptureMode) {
       }
 
       return true;
-    } catch (error) {
-      console.log("Location readiness error:", error);
+    } catch (_error) {
       setLocationError("Unable to access location services.");
       return false;
     }
@@ -323,8 +198,7 @@ export function useCameraLogic(mode: CaptureMode) {
         mayShowUserSettingsDialog: true,
       });
       await updateLocationMetadata(current);
-    } catch (error) {
-      console.log("Current camera location error:", error);
+    } catch (_error) {
       setLocationError("Unable to fetch current location.");
     }
   };
@@ -337,6 +211,16 @@ export function useCameraLogic(mode: CaptureMode) {
       try {
         const isReady = await ensureLocationReady();
         if (!isReady || !active) return;
+
+        if (preferences.locationMode === "manual" && preferences.manualLocation) {
+          setWeather(
+            await fetchWeatherSnapshot(
+              preferences.manualLocation.latitude,
+              preferences.manualLocation.longitude,
+            ),
+          );
+          return;
+        }
 
         const lastKnown = await Location.getLastKnownPositionAsync({
           maxAge: 30_000,
@@ -362,8 +246,7 @@ export function useCameraLogic(mode: CaptureMode) {
             void updateLocationMetadata(loc);
           },
         );
-      } catch (error) {
-        console.log("Camera location watcher error:", error);
+      } catch (_error) {
         if (active) {
           setLocationError("Unable to keep location tracking active.");
         }
@@ -374,13 +257,23 @@ export function useCameraLogic(mode: CaptureMode) {
       active = false;
       subscription?.remove();
     };
-  }, [mode]);
+  }, [mode, preferences.locationMode, preferences.manualLocation]);
 
   const refreshLocation = async () => {
     setIsRefreshingLocation(true);
     try {
       const isReady = await ensureLocationReady();
       if (isReady) {
+        if (preferences.locationMode === "manual" && preferences.manualLocation) {
+          setWeather(
+            await fetchWeatherSnapshot(
+              preferences.manualLocation.latitude,
+              preferences.manualLocation.longitude,
+            ),
+          );
+          setLocationError(null);
+          return;
+        }
         await fetchPreciseLocation();
       }
     } finally {
@@ -390,46 +283,58 @@ export function useCameraLogic(mode: CaptureMode) {
 
   useEffect(() => {
     if (isRecording) {
-      timerRef.current = setInterval(() => {
+      recordingTimerRef.current = setInterval(() => {
         setRecordingDuration((prev) => prev + 1);
       }, 1000);
     } else {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
       setRecordingDuration(0);
     }
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     };
   }, [isRecording]);
 
+  useEffect(() => {
+    return () => {
+      if (captureTimerRef.current) {
+        clearInterval(captureTimerRef.current);
+      }
+    };
+  }, []);
+
   const saveMedia = async (uri: string, type: CaptureMode) => {
-    if (Platform.OS === "web") {
-      const link = document.createElement("a");
-      link.href = uri;
-      link.download = `gps_camera_${Date.now()}.${type === "picture" ? "jpg" : "mp4"}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      Alert.alert(
-        "Captured",
-        `${type === "picture" ? "Photo" : "Video"} downloaded!`,
-      );
-      return;
+    const createdAt = Date.now();
+    const link = document.createElement("a");
+    link.href = uri;
+    link.download = buildDownloadFileName(
+      preferences.selectedProjectName,
+      type,
+      createdAt,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    addCaptureHistoryItem(
+      createCapturedMediaItem(
+        uri,
+        type,
+        preferences.selectedProjectName,
+        location?.address?.displayLabel ?? null,
+        createdAt,
+      ),
+    );
+
+    if (preferences.cameraSoundEnabled) {
+      playShutterFeedback();
     }
 
-    if (mediaLibraryPermission?.granted) {
-      await MediaLibrary.saveToLibraryAsync(uri);
-      Alert.alert(
-        "Saved",
-        `${type === "picture" ? "Photo" : "Video"} saved to gallery.`,
-      );
-    } else {
-      Alert.alert(
-        "Saved",
-        `${type === "picture" ? "Photo" : "Video"} saved to temp storage.`,
-      );
-    }
+    Alert.alert(
+      "Captured",
+      `${type === "picture" ? "Photo" : "Video"} downloaded!`,
+    );
   };
 
   const captureImage = async () => {
@@ -457,22 +362,51 @@ export function useCameraLogic(mode: CaptureMode) {
     try {
       setIsCapturing(true);
       setIsRecording(true);
-      // @ts-ignore
-      const video = await cameraRef.current.recordAsync({ mute: true });
+      const video = await cameraRef.current.recordAsync();
       if (video) await saveMedia(video.uri, "video");
-    } catch (error) {
-      console.error("Recording error:", error);
+    } catch (_error) {
       setIsRecording(false);
       setIsCapturing(false);
     }
   };
 
-  const handleAction = () => {
-    if (mode === "picture") {
-      void captureImage();
+  const startCountdown = (onComplete: () => void) => {
+    if (preferences.timerSeconds === 0) {
+      onComplete();
       return;
     }
-    void toggleRecording();
+
+    setCountdownRemaining(preferences.timerSeconds);
+    captureTimerRef.current = setInterval(() => {
+      setCountdownRemaining((current) => {
+        if (current === null || current <= 1) {
+          if (captureTimerRef.current) {
+            clearInterval(captureTimerRef.current);
+            captureTimerRef.current = null;
+          }
+          onComplete();
+          return null;
+        }
+
+        return current - 1;
+      });
+    }, 1000);
+  };
+
+  const handleAction = () => {
+    if (isRecording) {
+      void toggleRecording();
+      return;
+    }
+
+    startCountdown(() => {
+      if (mode === "picture") {
+        void captureImage();
+        return;
+      }
+
+      void toggleRecording();
+    });
   };
 
   const toggleCameraFacing = () => {
@@ -511,6 +445,7 @@ export function useCameraLogic(mode: CaptureMode) {
     addressLines,
     weather,
     locationError,
+    countdownRemaining,
     isRefreshingLocation,
     facing,
     flash,
@@ -528,5 +463,8 @@ export function useCameraLogic(mode: CaptureMode) {
     toggleFlash,
     toggleDualMode,
     formatDuration,
+    stampConfig: preferences.stampConfig,
+    selectedProjectName: preferences.selectedProjectName,
+    locationMode: preferences.locationMode,
   };
 }

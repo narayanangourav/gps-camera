@@ -1,21 +1,12 @@
 import React from "react";
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  Image,
-  ActivityIndicator,
-} from "react-native";
+import { Text, View, SafeAreaView, StatusBar } from "react-native";
 import { CameraView } from "expo-camera";
 import ViewShot from "react-native-view-shot";
-import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../App";
-import AutoScrollText from "../../components/AutoScrollText";
-import MiniMapPreview from "../../components/MiniMapPreview";
+import CameraBottomControls from "../../components/CameraBottomControls";
+import CameraScreenOverlay from "../../components/CameraScreenOverlay";
 import { useCameraLogic } from "../../logics/camera.logic";
 import { appTheme } from "../../logics/theme.logic";
 import { webDomProps } from "../../logics/webDom.logic";
@@ -28,10 +19,10 @@ export default function CameraScreen({ route }: Props) {
   const mode = route.params?.mode || "picture";
   const {
     cameraPermission,
-    locationPermission,
     location,
     addressLines,
     weather,
+    countdownRemaining,
     locationError,
     isRefreshingLocation,
     facing,
@@ -50,26 +41,12 @@ export default function CameraScreen({ route }: Props) {
     toggleFlash,
     toggleDualMode,
     formatDuration,
+    stampConfig,
+    selectedProjectName,
+    locationMode,
   } = useCameraLogic(mode);
 
-  const addressLine1 = addressLines
-    ? addressLines.line1
-    : location
-      ? "Resolving full address from GPS..."
-      : "Fetching location...";
-  const addressLine2 = addressLines
-    ? addressLines.line2
-    : location
-      ? "Please wait..."
-      : "";
-  const latitudeText = location
-    ? `Lat ${location.coords.latitude.toFixed(6)}`
-    : "Lat --";
-  const longitudeText = location
-    ? `Lon ${location.coords.longitude.toFixed(6)}`
-    : "Lon --";
-
-  if (!cameraPermission || !locationPermission) {
+  if (!cameraPermission) {
     return <View style={styles.container} />;
   }
 
@@ -115,333 +92,41 @@ export default function CameraScreen({ route }: Props) {
                 />
               </View>
             )}
-
-            <View
-              style={styles.overlayContainer}
-              {...webDomProps("camera-overlay-container", "camera-overlay-container")}
-            >
-              <View
-                style={styles.topControls}
-                {...webDomProps("camera-top-controls", "camera-top-controls")}
-              >
-                {isRecording && (
-                  <View
-                    style={{
-                      backgroundColor: appTheme.colors.recordSolid,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: appTheme.colors.textOnDark,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {formatDuration(recordingDuration)}
-                    </Text>
-                  </View>
-                )}
-
-                {!isRecording && <View />}
-
-                <View
-                  style={styles.dualControls}
-                  {...webDomProps("camera-dual-controls", "camera-dual-controls")}
-                >
-                  <Text style={styles.dualText}>Dual Mode</Text>
-                  <TouchableOpacity onPress={toggleDualMode}>
-                    <Ionicons
-                      name={isDualMode ? "checkbox" : "square-outline"}
-                      size={20}
-                      color={appTheme.colors.textPrimary}
-                    />
-                  </TouchableOpacity>
-
-                  {isDualMode && (
-                    <TouchableOpacity
-                      style={styles.miniSwap}
-                      onPress={toggleCameraFacing}
-                    >
-                      <Ionicons
-                        name="refresh"
-                        size={16}
-                        color={appTheme.colors.textPrimary}
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-
-              <View
-                style={styles.overlayCard}
-                {...webDomProps("camera-info-card", "camera-info-card")}
-              >
-                <View
-                  style={styles.overlayHeader}
-                  {...webDomProps("camera-info-header", "camera-info-header")}
-                >
-                  <Image
-                    source={require("../../../assets/app-logo.png")}
-                    style={styles.appIconSmall}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.dateTimeContainer}>
-                    <Text style={styles.dateTimeText}>
-                      {dateStr} {timeStr}
-                    </Text>
-                  </View>
-                </View>
-
-                <View
-                  style={styles.overlayBody}
-                  {...webDomProps("camera-info-body", "camera-info-body")}
-                >
-                  <View
-                    style={styles.mapPreview}
-                    {...webDomProps("camera-mini-map", "camera-mini-map")}
-                  >
-                    {location ? (
-                      <>
-                        <MiniMapPreview
-                          latitude={location.coords.latitude}
-                          longitude={location.coords.longitude}
-                          pinSize={18}
-                          scale={0.95}
-                          zoom={15}
-                        />
-                        <TouchableOpacity
-                          style={styles.mapRefreshButton}
-                          onPress={refreshLocation}
-                          disabled={isRefreshingLocation}
-                          accessibilityLabel="Refresh current location"
-                        >
-                          {isRefreshingLocation ? (
-                            <ActivityIndicator
-                              size="small"
-                              color={appTheme.colors.textPrimary}
-                            />
-                          ) : (
-                            <Ionicons
-                              name="locate"
-                              size={11}
-                              color={appTheme.colors.textPrimary}
-                            />
-                          )}
-                        </TouchableOpacity>
-                      </>
-                    ) : (
-                      <>
-                        <Ionicons
-                          name="map"
-                          size={32}
-                          color={appTheme.colors.textMuted}
-                        />
-                        <TouchableOpacity
-                          style={styles.mapRefreshButton}
-                          onPress={refreshLocation}
-                          disabled={isRefreshingLocation}
-                          accessibilityLabel="Refresh current location"
-                        >
-                          {isRefreshingLocation ? (
-                            <ActivityIndicator
-                              size="small"
-                              color={appTheme.colors.textPrimary}
-                            />
-                          ) : (
-                            <Ionicons
-                              name="locate"
-                              size={11}
-                              color={appTheme.colors.textPrimary}
-                            />
-                          )}
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-
-                  <View
-                    style={styles.infoColumn}
-                    {...webDomProps("camera-info-column", "camera-info-column")}
-                  >
-                    <View
-                      style={styles.addressBox}
-                      {...webDomProps("camera-address-box", "camera-address-box")}
-                    >
-                      <View
-                        style={styles.addressTitleRow}
-                        {...webDomProps("camera-address-line1-row", "camera-address-line-row")}
-                      >
-                        <AutoScrollText
-                          text={addressLine1}
-                          containerStyle={styles.addressTickerContainer}
-                          textStyle={styles.addressSingleLineText}
-                          containerProps={webDomProps(
-                            "camera-address-line1-scroll",
-                            "camera-address-scroll",
-                          )}
-                          textProps={webDomProps(
-                            "camera-address-line1",
-                            "camera-address-line camera-address-line-primary",
-                          )}
-                        />
-                      </View>
-                      {addressLine2 ? (
-                        <View
-                          style={styles.addressSubRow}
-                          {...webDomProps("camera-address-line2-row", "camera-address-line-row")}
-                        >
-                          <AutoScrollText
-                            text={addressLine2}
-                            containerStyle={styles.addressTickerContainer}
-                            textStyle={styles.addressSingleLineSubText}
-                            containerProps={webDomProps(
-                              "camera-address-line2-scroll",
-                              "camera-address-scroll",
-                            )}
-                            textProps={webDomProps(
-                              "camera-address-line2",
-                              "camera-address-line camera-address-line-secondary",
-                            )}
-                          />
-                        </View>
-                      ) : null}
-                      {locationError && (
-                        <Text style={styles.locationErrorText}>{locationError}</Text>
-                      )}
-                    </View>
-
-                    <View
-                      style={styles.overlayFooter}
-                      {...webDomProps("camera-meta-footer", "camera-meta-footer")}
-                    >
-                  <View
-                    style={[styles.pill, styles.weatherPill]}
-                    {...webDomProps("camera-pill-weather", "camera-meta-pill camera-meta-pill-weather")}
-                  >
-                        <Ionicons
-                          name="sunny"
-                          size={12}
-                          color={appTheme.colors.iconPrimary}
-                        />
-                    <Text
-                      numberOfLines={1}
-                      style={styles.pillText}
-                      {...webDomProps("camera-pill-weather-text", "camera-meta-pill-text")}
-                    >
-                          {weather ? `${weather.temperature} C` : "-- C"}
-                        </Text>
-                      </View>
-                  <View
-                    style={[styles.pill, styles.coordinatePill]}
-                    {...webDomProps("camera-pill-lat", "camera-meta-pill camera-meta-pill-lat")}
-                  >
-                        <Ionicons
-                          name="pin-outline"
-                          size={12}
-                          color={appTheme.colors.textPrimary}
-                        />
-                    <Text
-                      numberOfLines={1}
-                      style={styles.pillText}
-                      {...webDomProps("camera-pill-lat-text", "camera-meta-pill-text")}
-                    >
-                          {latitudeText}
-                        </Text>
-                      </View>
-                  <View
-                    style={[styles.pill, styles.coordinatePill]}
-                    {...webDomProps("camera-pill-lon", "camera-meta-pill camera-meta-pill-lon")}
-                  >
-                        <Ionicons
-                          name="navigate-outline"
-                          size={12}
-                          color={appTheme.colors.textPrimary}
-                        />
-                    <Text
-                      numberOfLines={1}
-                      style={styles.pillText}
-                      {...webDomProps("camera-pill-lon-text", "camera-meta-pill-text")}
-                    >
-                          {longitudeText}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
+            <CameraScreenOverlay
+              styles={styles}
+              dateStr={dateStr}
+              timeStr={timeStr}
+              selectedProjectName={selectedProjectName}
+              countdownRemaining={countdownRemaining}
+              isRecording={isRecording}
+              recordingDuration={recordingDuration}
+              formatDuration={formatDuration}
+              isDualMode={isDualMode}
+              toggleDualMode={toggleDualMode}
+              toggleCameraFacing={toggleCameraFacing}
+              locationMode={locationMode}
+              locationError={locationError}
+              addressLine1={addressLines.line1}
+              addressLine2={addressLines.line2}
+              location={location}
+              weather={weather}
+              stampConfig={stampConfig}
+              isRefreshingLocation={isRefreshingLocation}
+              refreshLocation={refreshLocation}
+            />
           </CameraView>
         </ViewShot>
       </View>
-
-      <View
-        style={styles.controlsContainer}
-        {...webDomProps("camera-bottom-controls", "camera-bottom-controls")}
-      >
-        <TouchableOpacity style={styles.controlButton} onPress={toggleFlash}>
-          <Ionicons
-            name={flash === "on" ? "flash" : "flash-off"}
-            size={24}
-            color={
-              flash === "on"
-                ? appTheme.colors.iconPrimary
-                : appTheme.colors.textPrimary
-            }
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={handleAction}
-          disabled={mode === "picture" && isCapturing}
-        >
-          <View style={styles.captureButtonOuter}>
-            {mode === "picture" ? (
-              <View
-                style={[styles.captureButton, isCapturing && styles.captureActive]}
-              />
-            ) : (
-              <View
-                style={[
-                  styles.captureButton,
-                  {
-                    backgroundColor: isRecording
-                      ? "transparent"
-                      : appTheme.colors.record,
-                  },
-                  isRecording && {
-                    borderRadius: 4,
-                    width: 30,
-                    height: 30,
-                    backgroundColor: appTheme.colors.record,
-                  },
-                ]}
-              >
-                {isRecording && (
-                  <View
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: appTheme.colors.recordSolid,
-                      borderRadius: 4,
-                    }}
-                  />
-                )}
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.controlButton} onPress={toggleCameraFacing}>
-          <Ionicons
-            name="camera-reverse"
-            size={24}
-            color={appTheme.colors.textPrimary}
-          />
-        </TouchableOpacity>
-      </View>
+      <CameraBottomControls
+        styles={styles}
+        flash={flash}
+        isCapturing={isCapturing}
+        isRecording={isRecording}
+        mode={mode}
+        toggleFlash={toggleFlash}
+        handleAction={handleAction}
+        toggleCameraFacing={toggleCameraFacing}
+      />
     </SafeAreaView>
   );
 }
