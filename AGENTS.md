@@ -2,22 +2,24 @@
 
 ## Project Direction
 
-- This repository is web-only.
-- This app is intended for public open-source use.
+- This repository is a pure web GPS Camera app.
+- The runtime stack is React + TypeScript + Vite.
+- GitHub Pages is the only deployment target.
 - OpenStreetMap is the default map source.
 - Keep map tile URLs configurable.
 - Keep OpenStreetMap attribution visible anywhere a map is rendered.
-- Prefer browser-compatible APIs and web-safe behavior.
-- Preserve existing working web camera, GPS, OpenStreetMap map, and photo-stamp behavior.
+- Prefer browser-native APIs where possible.
+- Preserve working browser camera, geolocation, map, and stamped photo behavior.
 
 ## Platform Constraints
 
+- Do not add Expo.
+- Do not add React Native runtime or build targets.
 - Do not add Android work.
 - Do not add iOS work.
 - Do not add native mobile build work.
 - Do not keep archived or deprecated Android/iOS/native build folders in the repository.
-- Do not add Gradle, Kotlin, Swift, Java, or platform-specific implementation.
-- Do not expand native media-library or gallery behavior.
+- Do not add Metro, Gradle, Kotlin, Swift, Java, or platform-specific implementation.
 - Do not use Google Maps.
 - Do not use Mapbox.
 - Do not use paid map providers.
@@ -28,19 +30,29 @@
 - Read `CODEX_MEMORY_MAP.md` before starting future work.
 - Update `CODEX_MEMORY_MAP.md` after every meaningful change.
 - Do not rewrite the whole app unless explicitly requested.
-- Do not remove existing working web behavior without a justified replacement.
+- Do not remove working browser behavior without a justified replacement.
 - Prefer permanent fixes over patches.
 - Keep changes targeted and reversible.
-- Record commands run and known limitations in `CODEX_MEMORY_MAP.md`.
+- Record commands run, results, and known limitations in `CODEX_MEMORY_MAP.md`.
 
 ## Validation Rules
 
 - Run `npm run typecheck` after changes.
-- Run unit tests after changes when a unit test command exists.
+- Run `npm run test:unit` after changes.
+- Run `npm run build:web` after changes when the toolchain is available.
 - If a command fails, record the exact command and failure in `CODEX_MEMORY_MAP.md`.
+
+## Testing Direction
+
+- Unit tests only.
+- Do not add Playwright.
+- Do not add Cypress.
+- Do not add Detox.
+- Do not add Selenium.
+- Do not add browser E2E automation.
 
 ## Current Priority
 
-- Move the project toward a production-ready web-only GPS Map Camera app.
-- Preserve current web routes and flows while extracting stable reusable logic.
-- Keep OpenStreetMap-first behavior and configurable tile URLs intact.
+- Complete the migration away from Expo and React Native runtime/build assumptions.
+- Keep the app browser-first, OpenStreetMap-first, and GitHub Pages-ready.
+- Preserve current web routes and flows while keeping the UI modern, minimalist, and responsive.

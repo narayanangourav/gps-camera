@@ -1,29 +1,34 @@
 # GPS Camera
 
-GPS Camera is a web-only Expo/React Native app for capturing browser photos with GPS, OpenStreetMap context, and configurable stamp overlays.
+GPS Camera is a pure web GPS map camera built with React, TypeScript, and a browser-first runtime. It captures browser photos, adds GPS and OpenStreetMap context, and exports stamped images without Expo or React Native.
 
-## What it does
-
-- browser camera capture
-- automatic or manual location mode
-- OpenStreetMap-first map preview with visible attribution
-- timestamp, address, coordinates, weather, accuracy, altitude, timezone, wind, humidity, and pressure stamp fields when enabled and available
-- project or site naming in exported filenames
-- session capture history
-- browser download flow
-- Web Share support when the browser supports the Web Share API
-
-## Mapping and platform policy
+## Platform and mapping policy
 
 - web-only
-- OpenStreetMap is the default map source
-- map tile URLs stay configurable through `EXPO_PUBLIC_TILE_URL_TEMPLATE`
-- no Google Maps
-- no Mapbox
-- no paid map provider requirement
+- no Expo
+- no React Native runtime
 - no Android build
 - no iOS build
 - no native mobile deployment path
+- OpenStreetMap-first
+- no Google Maps
+- no Mapbox
+- no paid map providers
+
+## Features
+
+- browser camera preview and photo capture
+- automatic or manual location mode
+- manual latitude and longitude entry with validation
+- OpenStreetMap map preview and full-screen map route
+- visible OpenStreetMap attribution where maps render
+- date/time, address, coordinates, map, weather, accuracy, altitude, timezone, wind, humidity, and pressure stamp fields when enabled and available
+- timer capture with `Off`, `3s`, `5s`, and `10s`
+- browser-safe shutter sound toggle
+- project naming in exported filenames
+- current-session capture history
+- browser download flow
+- Web Share support when the browser supports it
 
 ## Local development
 
@@ -33,7 +38,7 @@ Install dependencies:
 npm install
 ```
 
-Start the web dev server:
+Start the dev server:
 
 ```bash
 npm run dev
@@ -66,7 +71,7 @@ Copy-Item .env.example .env
 Set the tile template:
 
 ```env
-EXPO_PUBLIC_TILE_URL_TEMPLATE=https://tile.openstreetmap.org/{z}/{x}/{y}.png
+VITE_TILE_URL_TEMPLATE=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 ```
 
 ## Validation
@@ -83,13 +88,13 @@ Typecheck:
 npm run typecheck
 ```
 
-Build the static web export:
+Build the static site:
 
 ```bash
 npm run build:web
 ```
 
-Preview the built export:
+Preview the built site:
 
 ```bash
 npm run preview:web
@@ -97,7 +102,7 @@ npm run preview:web
 
 ## GitHub Pages deployment
 
-This repository includes a web-only GitHub Pages workflow at [`.github/workflows/deploy-github-pages.yml`](./.github/workflows/deploy-github-pages.yml).
+This repository includes a pure web GitHub Pages workflow at [`.github/workflows/deploy-github-pages.yml`](./.github/workflows/deploy-github-pages.yml).
 
 Workflow behavior:
 
@@ -114,22 +119,22 @@ Setup notes:
 
 1. Enable GitHub Pages in the repository settings and choose GitHub Actions as the source.
 2. If your default branch is not `main`, update the branch trigger in [`.github/workflows/deploy-github-pages.yml`](./.github/workflows/deploy-github-pages.yml).
-3. `npm run build:web` now normalizes the exported HTML for GitHub Pages by converting root-absolute asset references to relative paths, generating `404.html`, and adding `.nojekyll`.
+3. `vite.config.ts` should keep a GitHub Pages-safe `base` setting. If the repository is hosted from a project-site path, set the base path accordingly before deployment.
+4. Hash routing is preferred for Pages-safe route refresh behavior.
 
-## Browser requirements and limitations
-
-Permissions required:
+## Browser permissions
 
 - camera
 - location
 
-Known limitations:
+## Browser limitations
 
 - camera access requires HTTPS or `localhost`
-- geolocation requires permission and HTTPS or `localhost`
-- Web Share API support varies by browser
-- capture history is currently session-only
-- browser sound feedback can still be suppressed until the page receives user interaction
+- geolocation requires HTTPS or `localhost`
+- Web Share support varies by browser
+- torch support varies by browser and device
+- front/back camera switching varies by browser and device
+- capture history is session-only
 
 ## OpenStreetMap attribution
 
@@ -142,20 +147,3 @@ License to be decided.
 - no `LICENSE` file is committed yet
 - `package.json` is currently marked `UNLICENSED`
 
-## Project structure
-
-```text
-src/
-  components/
-  logics/
-  models/
-  screens/
-  services/
-  state/
-tests/
-assets/
-scripts/
-App.tsx
-app.json
-index.ts
-```

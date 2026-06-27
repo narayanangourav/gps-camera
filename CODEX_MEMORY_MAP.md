@@ -5,194 +5,210 @@
 - Web-only GPS Camera app.
 - Open-source friendly.
 - OpenStreetMap-first.
-- No Android, iOS, native mobile build, Google Maps, Mapbox, or paid map providers.
+- No Expo.
+- No React Native runtime or build target.
+- No Android, iOS, Metro, or native mobile build pipeline.
+- GitHub Pages is the intended deployment target.
 - Unit tests only.
 
-## Latest verification
+## Current active stack
 
-- Verification timestamp: 2026-06-27T19:27:01.4789943+05:30
-- Repository status: large uncommitted working tree from prior implementation work.
-- Active browser entry path:
-  - `index.html`
-  - `src/main.tsx`
-  - `src/web/App.tsx`
-- Active typecheck scope:
-  - `src/web/**`
-  - `src/services/**`
-  - `src/models/**`
-  - `src/state/**`
+- React
+- TypeScript
+- Vite-oriented app structure
+- Browser APIs for camera, geolocation, storage, and sharing
+- OpenStreetMap tile rendering
+- Node built-in test runner over compiled TypeScript unit tests
+
+## Active browser entry path
+
+- `index.html`
+- `src/main.tsx`
+- `src/web/App.tsx`
+
+## Browser API replacements in use
+
+- Camera
+  - `navigator.mediaDevices.getUserMedia`
+  - `<video>` preview
+  - canvas-based image rendering and export
+- Location
+  - `navigator.geolocation.watchPosition`
+  - browser permission/error handling
+- Photo capture/stamp
+  - `canvas` rendering in `src/web/services/captureRenderer.ts`
+  - browser download via temporary anchor element
+- Persistence
+  - `localStorage` for preferences
+  - `sessionStorage` for capture history
+- Sharing
+  - Web Share API when supported
+
+## Latest migration progress
+
+- Verification timestamp: 2026-06-27T23:15:00+05:30
+- `AGENTS.md` now states:
+  - web-only
+  - no Expo
+  - no React Native runtime/build target
+  - no Android/iOS/native build
+  - GitHub Pages only
+  - browser APIs where possible
+  - unit tests only
+- `README.md` now matches the pure web direction:
+  - no Expo instructions
+  - no React Native instructions
+  - no Android/iOS/APK/App Store/Play Store guidance
+  - uses `VITE_TILE_URL_TEMPLATE`
+- `.github/workflows/deploy-github-pages.yml` now:
+  - triggers on `main`
+  - uses `npm ci`
+  - runs typecheck, unit tests, and Vite build
+  - no longer contains Expo-specific environment flags
+- `.gitignore` now ignores:
+  - `dist/`
+  - `.tmp-tests/`
+- `package.json` now keeps a minimal pure-web dependency set:
+  - `react`
+  - `react-dom`
+  - `@types/react`
+  - `@types/react-dom`
+  - `@vitejs/plugin-react`
+  - `typescript`
+  - `vite`
+- Deprecated Expo/React Native source files were removed from:
+  - `src/components/**`
+  - `src/screens/**`
+  - unused `src/logics/**`
+- Shared browser-used logic still lives in:
   - `src/logics/appPreferences.logic.ts`
   - `src/logics/functions.logic.ts`
-
-## Commands run
-
-- `Get-Content AGENTS.md`
-- `Get-Content CODEX_MEMORY_MAP.md`
-- `Get-Content package.json`
-- `Get-Content README.md`
-- `git status --short`
-- `git diff --stat`
-- `Get-ChildItem .github -Recurse -File | Select-Object -ExpandProperty FullName`
-- `Get-ChildItem src -Recurse -File | Select-Object -ExpandProperty FullName`
-- `Get-ChildItem tests -Recurse -File | Select-Object -ExpandProperty FullName`
-- `if (Test-Path app.json) { Get-Content app.json } else { Write-Output 'MISSING: app.json' }`
-- `Get-Content package-lock.json`
-- `npm run test:unit`
-- `npm run typecheck`
-- `npm run build:web`
-- `Get-ChildItem node_modules\.bin | Select-Object -ExpandProperty Name`
-- `Get-Content src/main.tsx`
-- `Get-Content tsconfig.json`
-- `Get-Content tsconfig.tests.json`
-- `Get-Content src/state/AppPreferencesProvider.tsx`
-- `Get-Content src/logics/appPreferences.logic.ts`
-- `Get-Content src/services/persistence.service.ts`
-- `Get-Content src/services/share.service.ts`
-- `Get-Content src/services/stamp.service.ts`
-- `Get-Content src/services/location.service.ts`
-- `Get-Content src/web/App.tsx`
-- `Get-Content src/web/screens/OverviewScreen.tsx`
-- `Get-Content src/web/screens/CameraScreen.tsx`
-- `Get-Content src/web/screens/MapScreen.tsx`
-- `Get-Content src/web/screens/LocationSettingsScreen.tsx`
-- `Get-Content src/web/screens/StampSettingsScreen.tsx`
-- `Get-Content src/web/screens/CaptureHistoryScreen.tsx`
-- `Get-Content src/web/hooks/useCameraCapture.ts`
-- `Get-Content src/web/hooks/useCaptureHistoryActions.ts`
-- `Get-Content src/web/hooks/useLocationSettingsForm.ts`
-- `Get-Content src/web/hooks/useStampSettingsForm.ts`
-- `Get-Content src/web/components/OsmMap.tsx`
-- `Get-Content src/web/components/MapAttribution.tsx`
-- `Get-Content src/services/mapConfig.service.ts`
-- `Get-ChildItem src\web -Recurse -File | Select-String -Pattern 'Â|â€¦'`
-- `Get-Date -Format o`
-- attempted: `npm install --no-fund --no-audit`
-  - blocked by approval system before execution because escalation credits were unavailable
-
-## Actual results
-
-- `npm run test:unit`: passed
-  - 11 tests
-  - 11 passing
-  - 0 failing
-- `npm run typecheck`: passed
-- `npm run build:web`: failed
-  - exact failure: `'vite' is not recognized as an internal or external command, operable program or batch file.`
-- Root cause of build failure:
-  - `package.json` declares a Vite-based web toolchain
-  - installed `node_modules` and `package-lock.json` still reflect the older Expo/React Native dependency graph
-  - `node_modules/.bin` contains `expo` and `react-native`, but not `vite`
-
-## Dependency state
-
-- `expo-media-library`
-  - removed from `package.json`
-  - absent from `package-lock.json`
-  - no active source import found
-- `react-native-maps`
-  - removed from `package.json`
-  - absent from `package-lock.json`
-  - no active source import found
-- `package.json`
-  - current declared dependencies are `react` and `react-dom`
-  - current declared dev dependencies are `typescript`, `@types/react`, `@types/react-dom`, `vite`, `@vitejs/plugin-react`
-- `package-lock.json`
-  - does not match `package.json`
-  - top-level lock entry still lists Expo/React Native packages including `expo`, `expo-camera`, `expo-location`, `react-native`, `react-native-view-shot`, and navigation packages
-- `node_modules`
-  - still reflects the old Expo install state
-  - does not currently provide `vite`
-
-## Import verification classification
-
-- Active and must be removed
-  - stale Expo/React Native install state in `package-lock.json` and `node_modules`
-  - this is actively blocking `npm run build:web`
-- Deprecated but harmless
-  - legacy `src/components/**`, `src/logics/**`, and `src/screens/**` files still import `react-native`, `expo-camera`, `expo-location`, `expo-linear-gradient`, `expo-blur`, `@expo/vector-icons`, and `@react-navigation/native`
-  - these files are not part of the active browser entry path and are excluded from the current `tsconfig.json` include set
-- Required indirectly
-  - none verified
-- Unknown and needs manual review
-  - none beyond the stale legacy source tree remaining in the repository
-
-## Script state
-
-- Present and active
-  - `start`
-  - `dev`
-  - `web`
-  - `typecheck`
-  - `test:unit`
-  - `build:web`
-  - `preview:web`
-  - `build`
-- Not present as active package scripts
-  - `android`
-  - `ios`
-  - Android APK/AAB build scripts
-  - Playwright or E2E scripts
-
-## Feature verification from active code
-
-- Manual vs automatic location mode: implemented
-- Manual coordinate form: implemented
-- Coordinate validation: implemented
-- Stamp settings UI: implemented
-- Timer capture `Off/3s/5s/10s`: implemented
-- Web-safe shutter sound toggle: implemented
-- Project naming in filenames: implemented
-- Separate site-name feature: not implemented as a distinct field
-- Session capture history: implemented
-- Web Share support for captured photos: implemented conditionally when browser support exists
-- Full-screen OSM map route: implemented
-- OSM attribution on overview and mini-map/full map rendering: implemented in active `OsmMap` and `MapAttribution`
-- Browser `localStorage` preferences: implemented
-- Browser `sessionStorage` capture history: implemented
-
-## Native and deprecated state
-
-- `.github/workflows/build-android-apk.yml`: deleted in working tree
-- `.github/workflows/build-android-release.yml`: deleted in working tree
-- `.github/workflows/deploy-github-pages.yml`: present
-- `app.json`: deleted in working tree
-- `android/`: deleted in working tree
-- `ios/`: absent
-- Old Expo/React Native source tree still exists under `src/components`, `src/logics`, and `src/screens`
-  - current browser app no longer enters through those files
-
-## Verification-only fixes applied in this session
-
-- corrected visible attribution text in `src/web/components/MapAttribution.tsx`
-- corrected broken visible text encoding in:
+- Active browser text cleanup fixes applied:
+  - `src/web/components/MapAttribution.tsx`
   - `src/web/screens/OverviewScreen.tsx`
   - `src/web/screens/CameraScreen.tsx`
 
-## Mismatches against previous reports
+## Current dependency state
 
-- Previous memory reported an active Expo/React Native stack; actual active entry path is now browser-first Vite-style source under `src/main.tsx` and `src/web/**`
-- Previous memory reported successful web build behavior; actual build is currently broken because `vite` is declared but not installed in the present working tree
-- Previous memory reported `package-lock.json` as aligned; actual lockfile still reflects the older Expo dependency graph
-- Previous memory implied the repository had fully reconciled runtime state; actual repository still contains a deprecated legacy Expo/React Native source tree on disk
-- `README.md` is still stale in multiple places
-  - still describes the app as Expo/React Native
-  - still documents `EXPO_PUBLIC_TILE_URL_TEMPLATE`
-  - still lists `App.tsx`, `app.json`, and `index.ts` in project structure
+- `package.json`
+  - runtime deps: `react`, `react-dom`
+  - dev deps: `typescript`, `@types/react`, `@types/react-dom`, `vite`, `@vitejs/plugin-react`
+- `expo-media-library`
+  - removed from `package.json`
+  - absent from `package-lock.json`
+  - absent from active source
+- `react-native-maps`
+  - removed from `package.json`
+  - absent from `package-lock.json`
+  - absent from active source
+- Dependency reconciliation
+  - `npm install --no-fund --no-audit` succeeded
+  - `npm ci --no-fund --no-audit` also succeeded
+  - `package-lock.json` now matches `package.json`
+  - `node_modules/.bin` now contains `vite`
+  - old Expo/React Native install state was pruned from `node_modules`
+
+## Build and validation state
+
+- `npm run test:unit`
+  - passed
+  - 11 tests
+  - 11 passing
+  - 0 failing
+- `npm run typecheck`
+  - passed
+- `npm run build:web`
+  - passed
+  - Vite produced `dist/index.html`, `dist/assets/*.css`, and `dist/assets/*.js`
+- `npx vite --version`
+  - passed
+  - `vite/7.3.0 win32-x64 node-v25.9.0`
+
+## Search cleanup summary
+
+- Active source, docs, and workflow no longer contain stale Expo/React Native runtime usage.
+- Remaining search hits fall into these buckets:
+  - valid non-runtime doc mentions such as "no Expo" or "no React Native"
+  - historical notes inside this memory file
+  - false-positive platform binary metadata inside `package-lock.json` for Vite toolchain dependencies such as `@esbuild/*android*`, `@rollup/*android*`, and `lightningcss-android-arm64`
+- No active source import remains for:
+  - `expo-camera`
+  - `expo-location`
+  - `react-native`
+  - `react-native-view-shot`
+  - `react-native-web`
+
+## Native and workflow state
+
+- `android/` is deleted in the working tree.
+- `ios/` is absent.
+- `app.json` is deleted in the working tree.
+- Android CI workflows are deleted in the working tree.
+- `.github/workflows/deploy-github-pages.yml` is present and pure web.
+- No active package scripts remain for Android or iOS builds.
+
+## Commands run in this phase
+
+- `Get-Content AGENTS.md`
+- `Get-Content CODEX_MEMORY_MAP.md`
+- `Get-Content README.md`
+- `Get-Content package.json`
+- `Get-Content package-lock.json`
+- `npm config get cache`
+- `npm ls vite --depth=0`
+- `npm ls @vitejs/plugin-react --depth=0`
+- `npm cache ls vite --json`
+- `npm cache ls @vitejs/plugin-react --json`
+- `npm cache ls @types/react-dom --json`
+- `npm cache ls @types/react --json`
+- `npm cache ls typescript --json`
+- `npm cache ls react-dom --json`
+- `npm cache ls react --json`
+- `Get-ChildItem .github\workflows -File | Select-Object -ExpandProperty Name`
+- `Get-ChildItem src\components -Recurse -File | Select-Object -ExpandProperty FullName`
+- `Get-ChildItem src\screens -Recurse -File | Select-Object -ExpandProperty FullName`
+- `Get-ChildItem src\logics -Recurse -File | Select-Object -ExpandProperty FullName`
+- `rg -n -S '\bexpo\b|Expo|react-native|React Native|metro|app\.json|expo-camera|expo-location|react-native-view-shot|\bandroid\b|\bios\b|gradle|kotlin|swift|\bapk\b|\baab\b|play store|app store|Platform\.OS' AGENTS.md README.md src tests package.json package-lock.json .github`
+- `npm run test:unit`
+- `npm run typecheck`
+- `npm run build:web`
+- `Get-Content vite.config.ts`
+- `npm install --no-fund --no-audit`
+- `npx vite --version`
+- `npm ci --no-fund --no-audit`
+- `Get-Content .gitignore`
+- attempted: `npm install --no-fund --no-audit`
+  - blocked by approval system before execution because escalation credits were unavailable
+- attempted: `npm install --offline --no-fund --no-audit`
+  - failed with `ENOTCACHED`
+  - first on `@types/react-dom`
+  - then on `@vitejs/plugin-react`
+  - then on `vite`
+- attempted: `npm install --prefer-offline --no-fund --no-audit`
+  - failed with `EACCES` while trying to reach `https://registry.npmjs.org/vite`
+  - confirms the remaining blocker is dependency installation, not source code
+- attempted: `npm install --no-fund --no-audit`
+  - failed with `EACCES`
+  - exact failing fetch target: `https://registry.npmjs.org/vite`
+  - npm also failed to write logs under `C:\Users\NARAYANA N GOURAV\AppData\Local\npm-cache\_logs`
+  - confirms dependency reconciliation is still blocked by environment/network or permission constraints
+- completed: `npm install --no-fund --no-audit`
+  - succeeded
+  - installed `vite`
+  - installed `@vitejs/plugin-react`
+  - installed `@types/react-dom`
+  - pruned old Expo/React Native install state from `node_modules`
+  - updated `package-lock.json` to match `package.json`
+- completed: `npm ci --no-fund --no-audit`
+  - succeeded
+  - confirmed the corrected lockfile works for the GitHub Pages workflow path
 
 ## Known issues
 
-- The repository is not in a clean committed state.
-- `package-lock.json` does not match `package.json`.
-- `node_modules` does not match `package.json`.
-- `npm run build:web` cannot pass until dependencies are reinstalled for the Vite toolchain.
-- The approval system blocked the dependency refresh attempt during this session.
-- `.tmp-tests/` is regenerated by `npm run test:unit` and may remain in the working tree unless removed manually.
-- Legacy Expo/React Native source files remain on disk and can mislead future work unless removed or archived clearly.
+- The repository is still in an uncommitted working-tree state.
+- `.tmp-tests/` is regenerated by `npm run test:unit` and is now ignored.
 
 ## Next recommended work
 
-1. Run `npm install` to reconcile `package-lock.json` and `node_modules` with the current Vite-based `package.json`.
-2. Rerun `npm run build:web` after dependency reconciliation.
-3. Remove the deprecated Expo/React Native source tree once the browser path is confirmed stable.
-4. Update `README.md` so it matches the current browser-only runtime and environment variable names.
-5. Commit or otherwise reconcile the large working tree so future reports can describe a stable repository state.
+1. Commit or otherwise reconcile the working tree now that dependency and build validation are green.
+2. If desired, add a license file when the project owner chooses one.
