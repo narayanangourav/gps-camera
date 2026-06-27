@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Platform, StyleSheet, useWindowDimensions } from "react-native";
+import { StyleSheet, useWindowDimensions } from "react-native";
 
 import {
   responsiveHeightValue,
@@ -51,13 +51,7 @@ export const useStyles = () => {
             regular: 14,
             tall: 18,
           }),
-          marginTop: Platform.OS === "android"
-            ? responsiveHeightValue(height, {
-                compact: 18,
-                regular: 28,
-                tall: 34,
-              })
-            : 0,
+          marginTop: 0,
         },
         backButton: {
           width: responsiveValue(width, {

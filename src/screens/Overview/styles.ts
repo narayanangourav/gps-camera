@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Platform, StyleSheet, useWindowDimensions } from "react-native";
+import { StyleSheet, useWindowDimensions } from "react-native";
 
 import {
   isCompactScreen,
@@ -47,6 +47,9 @@ export const useStyles = () => {
           alignItems: "center",
           overflow: "hidden",
         },
+        absoluteFill: {
+          ...StyleSheet.absoluteFillObject,
+        },
         content: {
           flex: 1,
           width: "100%",
@@ -84,14 +87,7 @@ export const useStyles = () => {
             regular: 20,
             tall: 30,
           }),
-          marginTop:
-            Platform.OS === "android"
-              ? responsiveHeightValue(height, {
-                  compact: 18,
-                  regular: 28,
-                  tall: 36,
-                })
-              : 0,
+          marginTop: 0,
         },
         greeting: {
           fontSize: responsiveValue(width, {

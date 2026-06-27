@@ -2,8 +2,14 @@ import { useNavigation } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useAppPreferences } from "../state/AppPreferencesProvider";
 import {
-  formatAddress,
+  buildAddressFromExpo,
+  formatLocationAddress,
+  selectActiveLocation,
+  toAppLocationFromExpo,
+} from "../services/location.service";
+import {
   MapCoordinate,
   MapRegion,
   TARGET_ACCURACY_METERS,
@@ -12,30 +18,80 @@ import {
 
 export function useOverviewLogic() {
   const navigation = useNavigation<any>();
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null,
-  );
+  const { preferences } = useAppPreferences();
+  const [automaticLocation, setAutomaticLocation] = useState<ReturnType<
+    typeof toAppLocationFromExpo
+  > | null>(null);
   const [region, setRegion] = useState<MapRegion | null>(null);
   const [loading, setLoading] = useState(true);
   const [locationPermissionDenied, setLocationPermissionDenied] =
     useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [addressText, setAddressText] = useState<string | null>(null);
+  const [automaticLocationError, setAutomaticLocationError] = useState<string | null>(null);
   const [isRecentering, setIsRecentering] = useState(false);
   const followUserRef = useRef(true);
+
+  const location = selectActiveLocation({
+    automaticLocation,
+    manualLocation: preferences.manualLocation,
+    mode: preferences.locationMode,
+  });
+  const locationError =
+    preferences.locationMode === "manual" && preferences.manualLocation
+      ? null
+      : automaticLocationError;
+  const addressText = formatLocationAddress(location?.address ?? null);
 
   const updateFollowUser = (next: boolean) => {
     followUserRef.current = next;
   };
 
+  const applyAutomaticLocation = useCallback(async (next: Location.LocationObject) => {
+    const appLocation = toAppLocationFromExpo(next);
+    setAutomaticLocation(appLocation);
+    setRegion((prev) =>
+      toRegion(
+        {
+          latitude: appLocation.latitude,
+          longitude: appLocation.longitude,
+        },
+        prev,
+      ),
+    );
+  }, []);
+
   const resolveAddress = useCallback(async (coords: MapCoordinate) => {
     try {
       const places = await Location.reverseGeocodeAsync(coords);
-      setAddressText(formatAddress(places[0]));
-    } catch (error) {
-      console.log("Reverse geocode error:", error);
+      const address = buildAddressFromExpo(places[0]);
+      setAutomaticLocation((current) =>
+        current
+          ? {
+              ...current,
+              address,
+            }
+          : current,
+      );
+    } catch (_error) {
+      // Keep the previous address if reverse geocoding fails.
     }
   }, []);
+
+  useEffect(() => {
+    const manualLocation = preferences.manualLocation;
+
+    if (preferences.locationMode === "manual" && manualLocation) {
+      setRegion((prev) =>
+        toRegion(
+          {
+            latitude: manualLocation.latitude,
+            longitude: manualLocation.longitude,
+          },
+          prev,
+        ),
+      );
+      setLoading(false);
+    }
+  }, [preferences.locationMode, preferences.manualLocation]);
 
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null;
@@ -50,7 +106,7 @@ export function useOverviewLogic() {
 
         const servicesEnabled = await Location.hasServicesEnabledAsync();
         if (!servicesEnabled) {
-          setLocationError("Turn on device location services for better accuracy.");
+          setAutomaticLocationError("Turn on device location services for better accuracy.");
           return;
         }
 
@@ -59,8 +115,7 @@ export function useOverviewLogic() {
           requiredAccuracy: 100,
         });
         if (lastKnown) {
-          setLocation(lastKnown);
-          setRegion((prev) => toRegion(lastKnown.coords, prev));
+          await applyAutomaticLocation(lastKnown);
           void resolveAddress(lastKnown.coords);
         }
 
@@ -69,13 +124,11 @@ export function useOverviewLogic() {
             accuracy: Location.Accuracy.High,
             mayShowUserSettingsDialog: true,
           });
-          setLocationError(null);
-          setLocation(current);
-          setRegion((prev) => toRegion(current.coords, prev));
+          setAutomaticLocationError(null);
+          await applyAutomaticLocation(current);
           void resolveAddress(current.coords);
-        } catch (error) {
-          console.log("Current position error:", error);
-          setLocationError("Unable to get your current GPS fix.");
+        } catch (_error) {
+          setAutomaticLocationError("Unable to get your current GPS fix.");
         }
 
         subscription = await Location.watchPositionAsync(
@@ -86,16 +139,27 @@ export function useOverviewLogic() {
             mayShowUserSettingsDialog: true,
           },
           (next) => {
-            setLocationError(null);
-            setLocation(next);
+            setAutomaticLocationError(null);
+            setAutomaticLocation((current) => ({
+              ...(current ?? toAppLocationFromExpo(next)),
+              ...toAppLocationFromExpo(next),
+              address: current?.address ?? null,
+            }));
             if (followUserRef.current) {
-              setRegion((prev) => toRegion(next.coords, prev));
+              setRegion((prev) =>
+                toRegion(
+                  {
+                    latitude: next.coords.latitude,
+                    longitude: next.coords.longitude,
+                  },
+                  prev,
+                ),
+              );
             }
           },
         );
-      } catch (error) {
-        console.log("Location error:", error);
-        setLocationError("Unable to access location services.");
+      } catch (_error) {
+        setAutomaticLocationError("Unable to access location services.");
       } finally {
         setLoading(false);
       }
@@ -104,12 +168,12 @@ export function useOverviewLogic() {
     return () => {
       subscription?.remove();
     };
-  }, [resolveAddress]);
+  }, [applyAutomaticLocation, resolveAddress]);
 
   const markerCoordinate: MapCoordinate | null = location
     ? {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: location.latitude,
+        longitude: location.longitude,
       }
     : null;
 
@@ -139,7 +203,21 @@ export function useOverviewLogic() {
     try {
       const servicesEnabled = await Location.hasServicesEnabledAsync();
       if (!servicesEnabled) {
-        setLocationError("Turn on device location services for better accuracy.");
+        setAutomaticLocationError("Turn on device location services for better accuracy.");
+        return;
+      }
+
+      const manualLocation = preferences.manualLocation;
+      if (preferences.locationMode === "manual" && manualLocation) {
+        setRegion((prev) =>
+          toRegion(
+            {
+              latitude: manualLocation.latitude,
+              longitude: manualLocation.longitude,
+            },
+            prev,
+          ),
+        );
         return;
       }
 
@@ -148,13 +226,11 @@ export function useOverviewLogic() {
         mayShowUserSettingsDialog: true,
       });
 
-      setLocationError(null);
-      setLocation(fresh);
-      setRegion((prev) => toRegion(fresh.coords, prev));
+      setAutomaticLocationError(null);
+      await applyAutomaticLocation(fresh);
       await resolveAddress(fresh.coords);
-    } catch (error) {
-      console.log("Recenter location error:", error);
-      setLocationError("Unable to refresh exact location.");
+    } catch (_error) {
+      setAutomaticLocationError("Unable to refresh exact location.");
     } finally {
       setIsRecentering(false);
     }
@@ -198,4 +274,3 @@ export function useOverviewLogic() {
     TARGET_ACCURACY_METERS,
   };
 }
-

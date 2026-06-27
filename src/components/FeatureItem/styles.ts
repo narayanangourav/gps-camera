@@ -11,14 +11,14 @@ export const useStyles = () => {
   const { width, height } = useWindowDimensions();
   const textSize = Math.min(
     responsiveValue(width, {
-      mobile: 16,
-      tablet: 18,
-      desktop: 20,
+      mobile: 14,
+      tablet: 16,
+      desktop: 17,
     }),
     responsiveHeightValue(height, {
-      compact: 14,
-      regular: 16,
-      tall: 18,
+      compact: 13,
+      regular: 15,
+      tall: 16,
     }),
   );
 
@@ -28,23 +28,38 @@ export const useStyles = () => {
         featureItem: {
           flexDirection: "row",
           alignItems: "center",
+          backgroundColor: appTheme.colors.surfaceStrong,
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: appTheme.colors.borderSoft,
+          paddingHorizontal: responsiveValue(width, {
+            mobile: 12,
+            tablet: 14,
+            desktop: 16,
+          }),
+          paddingVertical: responsiveValue(width, {
+            mobile: 10,
+            tablet: 12,
+            desktop: 13,
+          }),
           marginBottom: responsiveHeightValue(height, {
-            compact: 10,
-            regular: 16,
-            tall: 20,
+            compact: 8,
+            regular: 10,
+            tall: 12,
           }),
         },
         featureIcon: {
           marginRight: responsiveValue(width, {
-            mobile: 12,
-            tablet: 15,
-            desktop: 16,
+            mobile: 10,
+            tablet: 12,
+            desktop: 14,
           }),
         },
         featureText: {
           color: appTheme.colors.textPrimary,
           fontSize: textSize,
-          fontWeight: "500",
+          fontWeight: "600",
+          flex: 1,
         },
       }),
     [height, textSize, width],

@@ -8,6 +8,7 @@ import {
   isValidTileY,
   wrapTileX,
 } from "../../logics/functions.logic";
+import MapAttribution from "../MapAttribution";
 import LocationPointer from "../LocationPointer";
 import { styles } from "./styles";
 
@@ -119,6 +120,7 @@ export default function MiniMapPreview({
       >
         <LocationPointer size={pinSize} />
       </View>
+      <MapAttribution compact />
     </View>
   );
 }

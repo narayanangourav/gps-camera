@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2022",
+    "outDir": ".tmp-tests",
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "noEmit": false
+  },
+  "include": [
+    "src/vite-env.d.ts",
+    "tests/**/*.ts",
+    "src/models/**/*.ts",
+    "src/services/**/*.ts",
+    "src/logics/functions.logic.ts"
+  ],
+  "exclude": ["dist", ".tmp-tests"]
+}
