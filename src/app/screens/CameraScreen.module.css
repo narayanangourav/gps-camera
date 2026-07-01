@@ -1,0 +1,12 @@
+.previewCard {
+  overflow: hidden;
+}
+
+.video {
+  background: #0f172a;
+  object-fit: cover;
+}
+
+.countdown {
+  backdrop-filter: blur(2px);
+}

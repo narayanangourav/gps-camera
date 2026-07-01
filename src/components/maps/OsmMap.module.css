@@ -1,0 +1,30 @@
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #dbeafe;
+}
+
+.tiles {
+  position: absolute;
+  inset: 0;
+}
+
+.tile {
+  position: absolute;
+  user-select: none;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  margin-top: -8px;
+  border-radius: 999px;
+  background: #dc2626;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.16);
+}

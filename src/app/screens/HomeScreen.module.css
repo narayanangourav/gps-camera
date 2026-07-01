@@ -1,0 +1,7 @@
+.card {
+  overflow: auto;
+}
+
+.title {
+  text-wrap: balance;
+}

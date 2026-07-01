@@ -27,20 +27,20 @@
 
 ## Workflow Rules
 
-- Read `CODEX_MEMORY_MAP.md` before starting future work.
-- Update `CODEX_MEMORY_MAP.md` after every meaningful change.
+- Read `.codex/memory-map.md` before handling every new prompt or task.
+- Update `.codex/memory-map.md` after every meaningful change.
 - Do not rewrite the whole app unless explicitly requested.
 - Do not remove working browser behavior without a justified replacement.
 - Prefer permanent fixes over patches.
 - Keep changes targeted and reversible.
-- Record commands run, results, and known limitations in `CODEX_MEMORY_MAP.md`.
+- Record commands run, results, and known limitations in `.codex/memory-map.md`.
 
 ## Validation Rules
 
 - Run `npm run typecheck` after changes.
 - Run `npm run test:unit` after changes.
 - Run `npm run build:web` after changes when the toolchain is available.
-- If a command fails, record the exact command and failure in `CODEX_MEMORY_MAP.md`.
+- If a command fails, record the exact command and failure in `.codex/memory-map.md`.
 
 ## Testing Direction
 
