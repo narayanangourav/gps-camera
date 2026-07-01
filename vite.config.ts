@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 const getBasePath = () => {
   const repository = process.env.GITHUB_REPOSITORY;
@@ -22,7 +23,7 @@ const getBasePath = () => {
 
 export default defineConfig({
   base: getBasePath(),
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   build: {
     outDir: "dist",
     emptyOutDir: true,

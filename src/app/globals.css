@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --color-app-bg: #f4f7fb;
+  --color-app-ink: #0f172a;
+  --color-app-muted: #475569;
+  --color-app-primary: #2563eb;
+  --color-app-pill: #eff6ff;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    background: var(--color-app-bg);
+    color: var(--color-app-ink);
+    font-family: var(--font-sans);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top, rgba(219, 234, 254, 0.75), transparent 40%),
+      var(--color-app-bg);
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+}
